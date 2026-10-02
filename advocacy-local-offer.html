@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=3.0">
+<title>Speaking Up! Advocacy at Local Offer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --ink:#2B2540;
+    --paper:#FBF9F4;
+    --card:#FFFFFF;
+    --l1:#2F80ED; --l1-bg:#E7F1FE;
+    --l2:#219653; --l2-bg:#E6F6EC;
+    --l3:#9B51E0; --l3-bg:#F3E8FE;
+    --l4:#F2994A; --l4-bg:#FEF1E4;
+    --l5:#EB5757; --l5-bg:#FDE9E9;
+    --l6:#C9971F; --l6-bg:#FBF2DC;
+    --accent: var(--l1);
+    --accent-bg: var(--l1-bg);
+    --good:#219653;
+    --bad:#EB5757;
+    --radius: 26px;
+    --shadow: 0 6px 0 rgba(43,37,64,0.12);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Atkinson Hyperlegible', Arial, sans-serif;
+    font-size:19px;
+    line-height:1.5;
+    min-height:100vh;
+  }
+  h1,h2,h3,.headline{
+    font-family:'Baloo 2', 'Atkinson Hyperlegible', sans-serif;
+    font-weight:700;
+    margin:0 0 8px 0;
+  }
+  button{ font-family:inherit; cursor:pointer; }
+  button:focus-visible, a:focus-visible, [tabindex]:focus-visible{
+    outline:4px solid #2B2540; outline-offset:3px;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; transition-duration:0.001ms !important; }
+  }
+
+  /* ---------- top bar ---------- */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    display:flex; align-items:center; gap:12px;
+    padding:14px 18px;
+    background:var(--accent);
+    color:#fff;
+    box-shadow:0 4px 0 rgba(0,0,0,0.08);
+  }
+  .topbar .nav-btn{
+    background:rgba(255,255,255,0.22);
+    border:2px solid rgba(255,255,255,0.7);
+    color:#fff;
+    border-radius:16px;
+    padding:10px 16px;
+    font-size:17px;
+    font-weight:700;
+    display:flex; align-items:center; gap:6px;
+  }
+  .topbar .nav-btn:active{ transform:translateY(2px); }
+  .topbar .title{
+    flex:1;
+    font-family:'Baloo 2',sans-serif;
+    font-size:22px;
+    font-weight:700;
+    text-align:center;
+  }
+  .topbar .stat{
+    background:rgba(255,255,255,0.22);
+    border-radius:16px;
+    padding:8px 14px;
+    font-weight:700;
+    font-size:16px;
+    white-space:nowrap;
+  }
+
+  .wrap{ max-width:920px; margin:0 auto; padding:20px 16px 60px; }
+
+  /* ---------- home screen ---------- */
+  .hero{
+    background:var(--card);
+    border-radius:var(--radius);
+    box-shadow:var(--shadow);
+    border:3px solid #EFE9DA;
+    padding:26px 24px;
+    margin-bottom:22px;
+    text-align:center;
+  }
+  .hero h1{ font-size:32px; color:#2F2A45; }
+  .hero p{ font-size:19px; margin:6px 0 0; }
+  .name-row{
+    margin-top:16px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap; align-items:center;
+  }
+  .name-row label{ font-weight:700; }
+  .name-row input{
+    font-size:18px; padding:10px 14px; border-radius:14px; border:2px solid #D8D2C2;
+    font-family:inherit; min-width:200px;
+  }
+
+  .lesson-grid{
+    display:grid; grid-template-columns:repeat(2,1fr); gap:16px;
+  }
+  @media(max-width:640px){ .lesson-grid{ grid-template-columns:1fr; } }
+  .lesson-card{
+    text-align:left;
+    background:var(--card);
+    border:3px solid var(--card-color, #ddd);
+    border-radius:var(--radius);
+    padding:20px;
+    box-shadow:var(--shadow);
+    display:flex; gap:14px; align-items:flex-start;
+    width:100%;
+    min-height:118px;
+  }
+  .lesson-card:active{ transform:translateY(3px); box-shadow:0 3px 0 rgba(43,37,64,0.12); }
+  .lesson-card .num{
+    flex:none;
+    width:56px; height:56px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-size:26px; font-weight:800; color:#fff;
+    background:var(--card-color,#999);
+    font-family:'Baloo 2',sans-serif;
+  }
+  .lesson-card .txt h3{ font-size:21px; margin-bottom:3px; color:#2F2A45; }
+  .lesson-card .txt p{ margin:0; font-size:16px; color:#5a5468; }
+  .lesson-card .emoji{ font-size:30px; margin-left:auto; align-self:center; }
+  .lesson-card .stars{ font-size:16px; margin-top:6px; color:#C9971F; font-weight:700;}
+
+  .progress-btn{
+    display:block; width:100%; text-align:center;
+    margin-top:18px; padding:18px; border-radius:20px;
+    background:#2F2A45; color:#fff; border:none; font-size:19px; font-weight:700;
+    font-family:'Baloo 2',sans-serif;
+  }
+
+  /* ---------- lesson menu ---------- */
+  .activity-list{ display:flex; flex-direction:column; gap:14px; }
+  .activity-btn{
+    display:flex; align-items:center; gap:16px;
+    background:var(--card); border:3px solid var(--accent-bg);
+    border-radius:20px; padding:18px 20px; text-align:left;
+    box-shadow:var(--shadow); font-size:19px;
+  }
+  .activity-btn:active{ transform:translateY(3px); box-shadow:0 3px 0 rgba(43,37,64,0.12); }
+  .activity-btn .aemoji{
+    flex:none; width:54px;height:54px;border-radius:16px;
+    background:var(--accent-bg); display:flex; align-items:center; justify-content:center; font-size:26px;
+  }
+  .activity-btn .atxt{ flex:1; }
+  .activity-btn .atxt b{ font-family:'Baloo 2',sans-serif; font-size:19px; }
+  .activity-btn .done{ font-size:26px; }
+
+  /* ---------- generic activity card ---------- */
+  .card{
+    background:var(--card); border-radius:var(--radius); border:3px solid var(--accent-bg);
+    box-shadow:var(--shadow); padding:24px; margin-bottom:18px;
+  }
+  .prompt{ font-size:24px; font-weight:700; font-family:'Baloo 2',sans-serif; text-align:center; margin-bottom:6px; color:#2F2A45;}
+  .subtext{ text-align:center; font-size:17px; color:#5a5468; margin-bottom:18px;}
+  .center{ text-align:center; }
+  .speak-btn{
+    background:var(--accent-bg); color:var(--accent); border:2px solid var(--accent);
+    border-radius:16px; padding:10px 18px; font-weight:700; font-size:17px;
+    display:inline-flex; align-items:center; gap:8px; margin:0 auto 16px; 
+  }
+
+  .big-emoji{ font-size:96px; text-align:center; margin:6px 0 14px; }
+
+  .two-choice{ display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media(max-width:520px){ .two-choice{ grid-template-columns:1fr; } }
+  .choice-tile{
+    background:#fff; border:3px solid var(--accent-bg); border-radius:22px;
+    padding:22px 14px; text-align:center; font-size:19px; font-weight:700;
+    font-family:'Baloo 2',sans-serif; color:#2F2A45;
+  }
+  .choice-tile .ce{ font-size:56px; display:block; margin-bottom:8px; }
+  .choice-tile:active{ transform:translateY(3px); }
+  .choice-tile.correct{ background:#E6F6EC; border-color:var(--good); }
+  .choice-tile.wrong{ background:#FDE9E9; border-color:var(--bad); opacity:0.8; }
+
+  .grid-3{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media(max-width:600px){ .grid-3{ grid-template-columns:repeat(2,1fr);} }
+  .tile{
+    background:#fff; border:3px solid var(--accent-bg); border-radius:20px; padding:16px 8px;
+    text-align:center; font-size:16px; font-weight:700; font-family:'Baloo 2',sans-serif; color:#2F2A45;
+  }
+  .tile .te{ font-size:44px; display:block; margin-bottom:6px; }
+  .tile.selected{ background:var(--accent); color:#fff; border-color:var(--accent); }
+  .tile.matched{ background:#E6F6EC; border-color:var(--good); opacity:0.55; }
+  .tile.shake{ animation:shake 0.4s; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-6px);} 75%{transform:translateX(6px);} }
+
+  .two-col{ display:grid; grid-template-columns:1fr 1fr; gap:26px; }
+  @media(max-width:600px){ .two-col{ grid-template-columns:1fr; } }
+  .col-label{ text-align:center; font-weight:700; font-family:'Baloo 2',sans-serif; margin-bottom:10px; font-size:18px;}
+  .stack{ display:flex; flex-direction:column; gap:12px; }
+  .bucket{
+    min-height:120px; border:3px dashed var(--accent); border-radius:20px; padding:14px;
+    background:var(--accent-bg); text-align:center;
+  }
+  .bucket-title{ font-weight:700; font-family:'Baloo 2',sans-serif; margin-bottom:10px; font-size:18px;}
+  .item-row{
+    display:flex; align-items:center; gap:14px; background:#fff; border:2px solid var(--accent-bg);
+    border-radius:16px; padding:12px 16px; font-size:18px; font-weight:700; margin-bottom:10px;
+  }
+  .item-row .ie{ font-size:32px; }
+  .item-row.faded{ opacity:0.3; }
+
+  .nav-row{ display:flex; justify-content:space-between; gap:12px; margin-top:18px; }
+  .btn{
+    border:none; border-radius:18px; padding:14px 22px; font-size:18px; font-weight:700;
+    font-family:'Baloo 2',sans-serif;
+  }
+  .btn-primary{ background:var(--accent); color:#fff; }
+  .btn-secondary{ background:#EFE9DA; color:#2F2A45; }
+  .btn:disabled{ opacity:0.4; }
+  .btn:active{ transform:translateY(2px); }
+  .btn-wide{ width:100%; }
+
+  .feedback{
+    text-align:center; font-size:20px; font-weight:700; font-family:'Baloo 2',sans-serif;
+    min-height:34px; margin-top:6px;
+  }
+  .feedback.good{ color:var(--good); }
+  .feedback.bad{ color:var(--bad); }
+
+  select{
+    font-size:18px; padding:10px 14px; border-radius:14px; border:2px solid var(--accent);
+    font-family:inherit; width:100%;
+  }
+  .field{ margin-bottom:16px; }
+  .field label{ display:block; font-weight:700; margin-bottom:6px; font-family:'Baloo 2',sans-serif; }
+
+  .radio-list{ display:flex; flex-direction:column; gap:10px; }
+  .radio-opt{
+    display:flex; align-items:center; gap:12px; background:#fff; border:2px solid var(--accent-bg);
+    border-radius:16px; padding:12px 16px; font-size:18px; font-weight:700;
+  }
+  .radio-opt.checked{ background:var(--accent-bg); border-color:var(--accent); }
+  .radio-opt input{ width:22px; height:22px; }
+
+  .info-gallery{ display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  @media(max-width:600px){ .info-gallery{ grid-template-columns:repeat(2,1fr);} }
+  .info-card{
+    background:#fff; border:3px solid var(--accent-bg); border-radius:20px; padding:14px; text-align:center;
+  }
+  .info-card .ie2{ font-size:42px; }
+  .info-card b{ display:block; margin-top:6px; font-family:'Baloo 2',sans-serif; font-size:16px; }
+  .info-card p{ font-size:14px; margin:6px 0 0; color:#5a5468; }
+  .info-card button{ margin-top:8px; background:var(--accent-bg); border:none; border-radius:12px; padding:6px 10px; font-size:14px; font-weight:700; color:var(--accent);}
+
+  .score-pill{
+    display:inline-flex; align-items:center; gap:8px; background:#fff; border:2px solid var(--accent);
+    border-radius:16px; padding:8px 16px; font-weight:700; font-family:'Baloo 2',sans-serif; color:var(--accent);
+    margin-bottom:14px;
+  }
+
+  /* ---------- summary ---------- */
+  .summary-badge{
+    width:140px; height:140px; border-radius:50%; background:var(--accent-bg); border:4px solid var(--accent);
+    display:flex; align-items:center; justify-content:center; font-size:70px; margin:0 auto 16px;
+  }
+  .summary-actions{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; margin-top:18px; }
+  .screenshot-tip{
+    background:#FFF7E0; border:2px dashed #E0B84E; border-radius:16px; padding:12px 16px;
+    text-align:center; font-size:16px; margin-top:16px;
+  }
+
+  /* progress screen */
+  .progress-row{
+    display:flex; align-items:center; gap:14px; background:#fff; border:2px solid #EFE9DA;
+    border-radius:18px; padding:14px 18px; margin-bottom:12px;
+  }
+  .progress-row .pe{ font-size:34px; width:48px; text-align:center; }
+  .progress-row .pmeta{ flex:1; }
+  .progress-row .pmeta b{ font-family:'Baloo 2',sans-serif; font-size:17px; }
+  .bar-bg{ background:#EFE9DA; border-radius:10px; height:14px; overflow:hidden; margin-top:6px; }
+  .bar-fill{ height:100%; border-radius:10px; }
+
+  /* confetti */
+  .confetti-piece{
+    position:fixed; top:-30px; font-size:28px; pointer-events:none; z-index:999;
+    animation:fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform:translateY(110vh) rotate(300deg); opacity:0.9; }
+  }
+  .sr-only{ position:absolute; width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+/* ============================================================
+   DATA
+============================================================ */
+const LESSONS = [
+{ id:1, title:"Understanding Advocacy", short:"What is advocacy?", emoji:"🧭", color:"var(--l1)", colorVar:"--l1", bgVar:"--l1-bg",
+  activities:[
+    { id:'story', type:'story', title:'My Story: I Have a Problem', emoji:'📖',
+      slides:[
+        {emoji:'😟', text:"Sometimes I have a problem."},
+        {emoji:'🤔', text:"I don't know what to do."},
+        {emoji:'🙋', text:"I can say: Help please!"},
+        {emoji:'🧑‍🏫', text:"A helper listens to me."},
+        {emoji:'😊', text:"Now I feel better. That is advocacy!"}
+      ]},
+    { id:'sort', type:'sort', title:'Sort: I Can Do It Myself / I Need Help', emoji:'🗂️',
+      instruction:"Tap a picture. Then tap the box where it belongs.",
+      categories:[{id:'myself',label:'I can do it myself',emoji:'💪'},{id:'help',label:'I need help',emoji:'🙋'}],
+      items:[
+        {emoji:'🦷',label:'Brush my teeth',cat:'myself'},
+        {emoji:'🧳',label:'Carry a heavy bag',cat:'help'},
+        {emoji:'🧥',label:'Put on my coat',cat:'myself'},
+        {emoji:'💊',label:'Take my medicine',cat:'help'},
+        {emoji:'🥤',label:'Pour a drink',cat:'myself'},
+        {emoji:'📝',label:'Fill in a form',cat:'help'}
+      ]},
+    { id:'whocanhelp', type:'quiz', title:'Practise: "Help Please!"', emoji:'🙋', speakPrompt:"Help please",
+      instruction:'Say or sign "Help please." Then choose who can help.',
+      questions:[
+        {q:'Who can help you at college?',emoji:'🏫',options:[{t:'Teacher',correct:true,e:'🧑‍🏫'},{t:'A stranger outside',correct:false,e:'🚶'}]},
+        {q:'Who can help you at home?',emoji:'🏠',options:[{t:'Family member',correct:true,e:'👨‍👩‍👧'},{t:'Nobody',correct:false,e:'🚫'}]},
+        {q:'Who can help if you feel unwell?',emoji:'🤒',options:[{t:'Doctor or nurse',correct:true,e:'👩‍⚕️'},{t:'Ignore it',correct:false,e:'🚫'}]}
+      ]}
+  ]},
+{ id:2, title:"Expressing Choices", short:"What do I want?", emoji:"🙋‍♀️", color:"var(--l2)", colorVar:"--l2", bgVar:"--l2-bg",
+  activities:[
+    { id:'choicepairs', type:'choicePairs', title:'Choose: Food, Activity, Journey', emoji:'🍎',
+      instruction:'Tap the one YOU want.',
+      rounds:[
+        {prompt:'What food do you want?', a:{e:'🍎',t:'Apple'}, b:{e:'🍪',t:'Biscuit'}},
+        {prompt:'What drink do you want?', a:{e:'🥤',t:'Juice'}, b:{e:'💧',t:'Water'}},
+        {prompt:'What activity do you want?', a:{e:'🎨',t:'Art'}, b:{e:'⚽',t:'Sport'}},
+        {prompt:'Where do you want to go?', a:{e:'📚',t:'Library'}, b:{e:'🏞️',t:'Park'}}
+      ]},
+    { id:'picturechoice', type:'pictureChoice', title:'"What Do I Want?" Picture Choice', emoji:'🖼️',
+      instruction:'Tap the picture of what YOU want to do today.',
+      items:[{e:'🎵',t:'Music'},{e:'🎮',t:'Games'},{e:'🎨',t:'Art'},{e:'📖',t:'Reading'},{e:'⚽',t:'Sport'},{e:'🍳',t:'Cooking'}]},
+    { id:'partner', type:'checklist', title:'Partner Practice: Listen & Follow', emoji:'🧑‍🤝‍🧑',
+      instruction:'Do this with a partner (staff, family or friend). Tick each step when you do it.',
+      items:[
+        'Partner asks: "What do you want?"',
+        'I choose my answer',
+        'Partner listens carefully',
+        'Partner repeats my choice back to me',
+        'Partner says "Thank you for telling me!"'
+      ]}
+  ]},
+{ id:3, title:"Supporting Someone Else", short:"Being a good helper", emoji:"🤝", color:"var(--l3)", colorVar:"--l3", bgVar:"--l3-bg",
+  activities:[
+    { id:'goodhelper', type:'yesno', title:'What Does A Good Helper Do?', emoji:'🌟',
+      instruction:'Is this a good helper, or not so good? Choose 👍 or 👎.',
+      statements:[
+        {t:'Listens carefully',good:true,e:'👂'},
+        {t:'Talks over you',good:false,e:'🗣️'},
+        {t:'Waits for you to finish',good:true,e:'⏳'},
+        {t:'Chooses for you without asking',good:false,e:'🙅'},
+        {t:'Smiles and is kind',good:true,e:'😊'},
+        {t:'Gets cross and rushes you',good:false,e:'😠'}
+      ]},
+    { id:'roleplayfriend', type:'roleplay', title:'Role-Play: A Friend Wants Help', emoji:'🎭',
+      instruction:'Choose what a GOOD helper does. Choose for your friend, not for yourself.',
+      rounds:[
+        {scenario:"Your friend can't choose between two snacks. What do you do?", emoji:'🍎🍪',
+          options:[{t:'Listen and ask what they like',correct:true,e:'👂'},{t:'Pick your own favourite for them',correct:false,e:'🙋‍♂️'},{t:'Walk away',correct:false,e:'🚶'}]},
+        {scenario:"Your friend loves the colour red. You are choosing a cup for them. Which do you pick?", emoji:'🥤',
+          options:[{t:'The red cup (their favourite)',correct:true,e:'🔴'},{t:'The blue cup (your favourite)',correct:false,e:'🔵'}]},
+        {scenario:"Your friend looks worried and quiet. What do you do first?", emoji:'😟',
+          options:[{t:'Sit with them and listen',correct:true,e:'👂'},{t:'Tell them to cheer up',correct:false,e:'🙅'}]}
+      ]},
+    { id:'didilisten', type:'thumbs', title:'"Did I Listen?" Self-Check', emoji:'👍',
+      instruction:'Think about the role-play. Rate yourself with 👍 or 👎.',
+      statements:[
+        'I looked at my friend',
+        'I let my friend choose',
+        'I said their choice out loud',
+        'I only thought about myself'
+      ]}
+  ]},
+{ id:4, title:"Asking For Support", short:"Can you help me?", emoji:"🙏", color:"var(--l4)", colorVar:"--l4", bgVar:"--l4-bg",
+  activities:[
+    { id:'match', type:'match', title:'Match: Problem → Helper', emoji:'🔗',
+      instruction:'Tap a problem. Then tap the person who can help.',
+      pairs:[
+        {problem:{e:'😕',t:"I don't understand"}, helper:{e:'🧑‍🏫',t:'Teacher'}},
+        {problem:{e:'😢',t:'I am unhappy'}, helper:{e:'🧑‍⚕️',t:'Counsellor'}},
+        {problem:{e:'🙋',t:'I need help'}, helper:{e:'🧑‍🤝‍🧑',t:'Job Coach'}},
+        {problem:{e:'🙉',t:"Someone isn't listening"}, helper:{e:'👮',t:'Trusted Adult'}}
+      ]},
+    { id:'canyouhelp', type:'quiz', title:'Practise: "Can You Help Me?"', emoji:'🗣️', speakPrompt:"Can you help me?",
+      instruction:'Say or sign "Can you help me?" Then choose the best person to ask.',
+      questions:[
+        {q:'You are lost in town. Who do you ask?',emoji:'🗺️',options:[{t:'A police officer or shop worker',correct:true,e:'👮'},{t:'Keep walking alone',correct:false,e:'🚶'}]},
+        {q:'Your work is too hard today. Who do you ask?',emoji:'💼',options:[{t:'Your job coach',correct:true,e:'🧑‍🤝‍🧑'},{t:'No one',correct:false,e:'🚫'}]},
+        {q:'You feel unsafe. Who do you ask?',emoji:'⚠️',options:[{t:'A trusted adult',correct:true,e:'🧑'},{t:'A stranger',correct:false,e:'❓'}]}
+      ]}
+  ]},
+{ id:5, title:"Where Can I Get Help?", short:"Services & trusted people", emoji:"📍", color:"var(--l5)", colorVar:"--l5", bgVar:"--l5-bg",
+  activities:[
+    { id:'services', type:'info', title:'Advocacy Services & Trusted People', emoji:'🏛️',
+      instruction:'Tap each picture to hear about it.',
+      cards:[
+        {e:'🏥',t:'GP / Doctor', desc:'Helps when you feel unwell.'},
+        {e:'📚',t:'Library', desc:'A quiet place to read and get information.'},
+        {e:'🏛️',t:'Community Hub', desc:'A place to meet people and get support.'},
+        {e:'👮',t:'Police', desc:'Helps keep you safe.'},
+        {e:'🧑‍⚖️',t:'Advocate', desc:'Speaks up for you and helps you be heard.'},
+        {e:'👨‍👩‍👧',t:'Family', desc:'People who know and love you.'}
+      ]},
+    { id:'journeyplan', type:'planner', title:'Plan My Journey', emoji:'🗺️',
+      instruction:'Build your plan: Who, Where, and How.',
+      fields:[
+        {key:'who', label:'Who will help me?', options:['My job coach','My teacher','A family member','My advocate']},
+        {key:'where', label:'Where am I going?', options:['GP surgery','Library','Community hub','Job centre']},
+        {key:'how', label:'How will I get there?', options:['By bus','By walking','By tube','By car']}
+      ]},
+    { id:'visitservice', type:'roleplay', title:'Role-Play: Visiting an Advocacy Service', emoji:'🎭',
+      instruction:'Choose what to say at each step.',
+      rounds:[
+        {scenario:'You arrive at the advocacy service. What do you say first?', emoji:'🚪',
+          options:[{t:'"Hello, I need some help"',correct:true,e:'🙋'},{t:'Say nothing and sit down',correct:false,e:'🤐'}]},
+        {scenario:'They ask, "What is the problem?" What do you do?', emoji:'❓',
+          options:[{t:'Explain my problem calmly',correct:true,e:'🗣️'},{t:'Walk out',correct:false,e:'🚶'}]},
+        {scenario:'They offer to help you. What do you say?', emoji:'🤝',
+          options:[{t:'"Thank you for helping me"',correct:true,e:'🙏'},{t:'Say nothing',correct:false,e:'🤐'}]}
+      ]}
+  ]},
+{ id:6, title:"Putting It All Together", short:"I can speak up!", emoji:"🏆", color:"var(--l6)", colorVar:"--l6", bgVar:"--l6-bg",
+  activities:[
+    { id:'recap', type:'quiz', title:'Recap Game: Who Can Help?', emoji:'🎯',
+      instruction:'Choose the best answer for each question.',
+      questions:[
+        {q:'You don\'t understand your work. Who helps?',emoji:'😕',options:[{t:'Teacher or job coach',correct:true,e:'🧑‍🏫'},{t:'No one',correct:false,e:'🚫'}]},
+        {q:'You feel unwell. Who helps?',emoji:'🤒',options:[{t:'Doctor or nurse',correct:true,e:'👩‍⚕️'},{t:'Ignore it',correct:false,e:'🚫'}]},
+        {q:'You are unhappy. Who helps?',emoji:'😢',options:[{t:'A trusted adult or counsellor',correct:true,e:'🧑'},{t:'Keep it a secret',correct:false,e:'🤐'}]},
+        {q:'What do you say when you need help?',emoji:'🙋',options:[{t:'"Can you help me?"',correct:true,e:'💬'},{t:'Say nothing',correct:false,e:'🤐'}]}
+      ]},
+    { id:'myproblem', type:'problemSelect', title:'My Real-Life Problem', emoji:'💭',
+      instruction:'Choose a real problem, then practise asking for help.',
+      options:[
+        {e:'💼',t:'My work is too hard'},
+        {e:'🚌',t:'I can\'t find my bus'},
+        {e:'😢',t:'I feel unhappy'},
+        {e:'🍽️',t:'I don\'t like my lunch choice'},
+        {e:'👥',t:'Someone is not being kind to me'}
+      ]},
+    { id:'community', type:'community', title:'Mini Community Role-Play', emoji:'🌟',
+      instruction:'Follow the story: Student → Advocate → Solution.',
+      steps:[
+        {who:'Student', emoji:'🙋', scenario:'You have a problem at the shop. What do you do?',
+          options:[{t:'Find someone who can help and say "Can you help me?"',correct:true,e:'🗣️'},{t:'Leave without help',correct:false,e:'🚶'}]},
+        {who:'Advocate', emoji:'🧑‍⚖️', scenario:'The helper listens to you. What happens next?',
+          options:[{t:'They ask what you need and listen carefully',correct:true,e:'👂'},{t:'They ignore you',correct:false,e:'🚫'}]},
+        {who:'Solution', emoji:'✅', scenario:'Together you solve the problem. How do you feel?',
+          options:[{t:'Proud — I spoke up and got help!',correct:true,e:'😄'},{t:'I did not need to speak up',correct:false,e:'😐'}]}
+      ]}
+  ]}
+];
+
+/* ============================================================
+   STATE
+============================================================ */
+const state = {
+  screen:'home',
+  lessonId:null,
+  activityId:null,
+  studentName:'',
+  results:{} // results[lessonId][activityId] = {correct,total,completedAt}
+};
+
+function getLesson(id){ return LESSONS.find(l=>l.id===id); }
+function getActivity(lessonId,activityId){ return getLesson(lessonId).activities.find(a=>a.id===activityId); }
+
+function setLessonColorVars(lesson){
+  document.documentElement.style.setProperty('--accent', lesson? `var(${lesson.colorVar})` : 'var(--l1)');
+  document.documentElement.style.setProperty('--accent-bg', lesson? `var(${lesson.bgVar})` : 'var(--l1-bg)');
+}
+
+/* ============================================================
+   SPEECH
+============================================================ */
+function speak(text){
+  try{
+    if('speechSynthesis' in window){
+      window.speechSynthesis.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.85; u.pitch = 1.05;
+      window.speechSynthesis.speak(u);
+    }
+  }catch(e){}
+}
+
+/* ============================================================
+   CELEBRATION
+============================================================ */
+function celebrate(big){
+  const n = big? 26 : 12;
+  const emojis = ['🎉','⭐','🎊','✨','👏','🌟'];
+  for(let i=0;i<n;i++){
+    const el = document.createElement('div');
+    el.className='confetti-piece';
+    el.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    el.style.left = Math.random()*100+'vw';
+    el.style.fontSize = (18+Math.random()*24)+'px';
+    el.style.animationDuration = (2+Math.random()*1.5)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 3800);
+  }
+}
+
+/* ============================================================
+   RENDER: ROOT ROUTER
+============================================================ */
+function render(){
+  const app = document.getElementById('app');
+  if(state.screen==='home'){ setLessonColorVars(null); app.innerHTML = renderHome(); attachHomeEvents(); return; }
+  const lesson = getLesson(state.lessonId);
+  setLessonColorVars(lesson);
+  if(state.screen==='lessonMenu'){ app.innerHTML = renderLessonMenu(lesson); attachLessonMenuEvents(lesson); return; }
+  if(state.screen==='activity'){ app.innerHTML = renderActivityShell(lesson); mountActivity(lesson); return; }
+  if(state.screen==='summary'){ app.innerHTML = renderSummaryShell(lesson); attachSummaryEvents(lesson); return; }
+  if(state.screen==='progress'){ app.innerHTML = renderProgress(); attachProgressEvents(); return; }
+}
+
+/* ---------- topbar helper ---------- */
+function topbar(title, opts){
+  opts = opts||{};
+  return `
+  <div class="topbar">
+    ${opts.back? `<button class="nav-btn" onclick="${opts.back}">⬅️ <span>Back</span></button>` : `<span style="width:1px"></span>`}
+    <div class="title">${title}</div>
+    ${opts.stat? `<div class="stat">${opts.stat}</div>` : `<span style="width:1px"></span>`}
+  </div>`;
+}
+
+/* ============================================================
+   HOME
+============================================================ */
+function renderHome(){
+  const totalActivities = LESSONS.reduce((s,l)=>s+l.activities.length,0);
+  let done=0;
+  LESSONS.forEach(l=> l.activities.forEach(a=>{ if(state.results[l.id] && state.results[l.id][a.id]) done++; }));
+  return `
+  ${topbar('🗣️ Speaking Up! Advocacy', {stat: `${done}/${totalActivities} ✅`})}
+  <div class="wrap">
+    <div class="hero">
+      <h1>Speaking Up! Advocacy at Local Offer</h1>
+      <p>Learn to ask for help, make choices, and support others — one lesson at a time.</p>
+      <div class="name-row">
+        <label for="nameInput">My name:</label>
+        <input id="nameInput" type="text" placeholder="Type your name" value="${escapeHtml(state.studentName)}">
+      </div>
+    </div>
+    <div class="lesson-grid">
+      ${LESSONS.map(l=>{
+        const doneCount = l.activities.filter(a=> state.results[l.id] && state.results[l.id][a.id]).length;
+        const stars = '⭐'.repeat(doneCount) + '☆'.repeat(l.activities.length-doneCount);
+        return `
+        <button class="lesson-card" style="--card-color:${l.color}" onclick="openLesson(${l.id})">
+          <div class="num" style="--card-color:${l.color}">${l.id}</div>
+          <div class="txt">
+            <h3>${l.title}</h3>
+            <p>${l.short}</p>
+            <div class="stars">${stars}</div>
+          </div>
+          <div class="emoji">${l.emoji}</div>
+        </button>`;
+      }).join('')}
+    </div>
+    <button class="progress-btn" onclick="goProgress()">🏅 My Progress &amp; Certificate</button>
+  </div>`;
+}
+function attachHomeEvents(){
+  const inp = document.getElementById('nameInput');
+  if(inp){ inp.addEventListener('input', e=>{ state.studentName = e.target.value; }); }
+}
+function openLesson(id){ state.lessonId=id; state.screen='lessonMenu'; render(); }
+function goHome(){ state.screen='home'; state.lessonId=null; state.activityId=null; render(); }
+function goProgress(){ state.screen='progress'; render(); }
+
+/* ============================================================
+   LESSON MENU
+============================================================ */
+function renderLessonMenu(lesson){
+  return `
+  ${topbar(`${lesson.emoji} ${lesson.id}. ${lesson.title}`, {back:'goHome()'})}
+  <div class="wrap">
+    <div class="hero" style="text-align:left;">
+      <h2>${lesson.title}</h2>
+      <p>${lessonIntro(lesson)}</p>
+    </div>
+    <div class="activity-list">
+      ${lesson.activities.map((a,i)=>{
+        const res = state.results[lesson.id] && state.results[lesson.id][a.id];
+        return `
+        <button class="activity-btn" onclick="openActivity(${lesson.id},'${a.id}')">
+          <div class="aemoji">${a.emoji}</div>
+          <div class="atxt"><b>${i+1}. ${a.title}</b></div>
+          <div class="done">${res? '✅':'▶️'}</div>
+        </button>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+function lessonIntro(lesson){
+  const intros = {
+    1:'Watch the story, sort pictures, and practise saying "Help please!"',
+    2:'Practise choosing what YOU want, and having your choice listened to.',
+    3:'Learn what a good helper does, and practise helping a friend.',
+    4:'Practise matching problems to the right helper, and asking for support.',
+    5:'Find out where to get help, and plan a journey to a service.',
+    6:'Bring it all together with a recap game and a community role-play.'
+  };
+  return intros[lesson.id];
+}
+function attachLessonMenuEvents(){}
+function openActivity(lessonId, activityId){ state.lessonId=lessonId; state.activityId=activityId; state.screen='activity'; render(); }
+
+/* ============================================================
+   ACTIVITY SHELL + MOUNT
+============================================================ */
+function renderActivityShell(lesson){
+  const activity = getActivity(lesson.id, state.activityId);
+  return `
+  ${topbar(activity.title, {back:`backToLessonMenu()`})}
+  <div class="wrap" id="activityWrap"></div>`;
+}
+function backToLessonMenu(){ state.screen='lessonMenu'; render(); }
+
+function mountActivity(lesson){
+  const activity = getActivity(lesson.id, state.activityId);
+  const wrap = document.getElementById('activityWrap');
+  const renderers = {
+    story: renderStoryActivity, sort: renderSortActivity, quiz: renderQuizActivity,
+    choicePairs: renderChoicePairsActivity, pictureChoice: renderPictureChoiceActivity,
+    checklist: renderChecklistActivity, yesno: renderYesNoActivity, roleplay: renderRoleplayActivity,
+    thumbs: renderThumbsActivity, match: renderMatchActivity, info: renderInfoActivity,
+    planner: renderPlannerActivity, problemSelect: renderProblemSelectActivity, community: renderCommunityActivity
+  };
+  renderers[activity.type](wrap, lesson, activity);
+}
+
+function finishActivity(lesson, activity, correct, total){
+  if(!state.results[lesson.id]) state.results[lesson.id]={};
+  state.results[lesson.id][activity.id] = {correct, total, completedAt:new Date().toLocaleString()};
+  celebrate(true);
+  state.screen='summary';
+  render();
+}
+
+/* ---------- STORY ---------- */
+function renderStoryActivity(wrap, lesson, activity){
+  let idx=0;
+  function paint(){
+    const s = activity.slides[idx];
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction||''}</div>
+        <div class="big-emoji">${s.emoji}</div>
+        <div class="prompt">${s.text}</div>
+        <div class="center"><button class="speak-btn" id="spk">🔊 Read aloud</button></div>
+        <div class="nav-row">
+          <button class="btn btn-secondary" id="prevBtn" ${idx===0?'disabled':''}>⬅️ Back</button>
+          <span class="feedback">${idx+1} / ${activity.slides.length}</span>
+          <button class="btn btn-primary" id="nextBtn">${idx===activity.slides.length-1? 'Finish ✅' : 'Next ➡️'}</button>
+        </div>
+      </div>`;
+    document.getElementById('spk').onclick=()=>speak(s.text);
+    document.getElementById('prevBtn').onclick=()=>{ if(idx>0){idx--; paint();} };
+    document.getElementById('nextBtn').onclick=()=>{
+      if(idx<activity.slides.length-1){ idx++; paint(); }
+      else{ finishActivity(lesson, activity, activity.slides.length, activity.slides.length); }
+    };
+  }
+  paint();
+}
+
+/* ---------- SORT ---------- */
+function renderSortActivity(wrap, lesson, activity){
+  let selected=null;
+  const placed={}; // itemIndex -> catId (if correct-placed, locked)
+  let correctCount=0;
+  function paint(msg){
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="grid-3" id="itemsGrid">
+          ${activity.items.map((it,i)=>`
+            <button class="tile item-tile ${placed[i]?'matched':''} ${selected===i?'selected':''}" data-i="${i}" ${placed[i]?'disabled':''}>
+              <span class="te">${it.emoji}</span>${it.label}
+            </button>`).join('')}
+        </div>
+        <div class="two-col" style="margin-top:18px;">
+          ${activity.categories.map(c=>`
+            <div class="bucket" data-cat="${c.id}">
+              <div class="bucket-title">${c.emoji} ${c.label}</div>
+            </div>`).join('')}
+        </div>
+        <div class="feedback ${msg&&msg.good?'good':(msg?'bad':'')}">${msg? msg.text : 'Tap a picture, then tap a box.'}</div>
+      </div>`;
+    wrap.querySelectorAll('.item-tile').forEach(btn=>{
+      btn.onclick=()=>{ selected = parseInt(btn.dataset.i); paint(); };
+    });
+    wrap.querySelectorAll('.bucket').forEach(b=>{
+      b.onclick=()=>{
+        if(selected===null) return;
+        const item = activity.items[selected];
+        const catId = b.dataset.cat;
+        if(item.cat===catId){
+          placed[selected]=catId; correctCount++; selected=null;
+          const allDone = Object.keys(placed).length===activity.items.length;
+          if(allDone){
+            setTimeout(()=> finishActivity(lesson, activity, correctCount, activity.items.length), 500);
+            paint({good:true,text:'Great sorting! 🎉'});
+          } else {
+            celebrate(false);
+            paint({good:true,text:'Yes! Well done. ✅'});
+          }
+        } else {
+          selected=null;
+          paint({good:false,text:'Try again — think about it! 🤔'});
+        }
+      };
+    });
+  }
+  paint();
+}
+
+/* ---------- QUIZ (used by whocanhelp, canyouhelp, recap) ---------- */
+function renderQuizActivity(wrap, lesson, activity){
+  let idx=0, correct=0;
+  function paint(feedback){
+    const q = activity.questions[idx];
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction||''}</div>
+        ${activity.speakPrompt? `<div class="center"><button class="speak-btn" id="spk">🔊 "${activity.speakPrompt}"</button></div>`:''}
+        <div class="big-emoji">${q.emoji}</div>
+        <div class="prompt">${q.q}</div>
+        <div class="two-choice">
+          ${q.options.map((o,i)=>`
+            <button class="choice-tile" data-i="${i}"><span class="ce">${o.e}</span>${o.t}</button>`).join('')}
+        </div>
+        <div class="feedback">${feedback||''}</div>
+      </div>`;
+    if(activity.speakPrompt) document.getElementById('spk').onclick=()=>speak(activity.speakPrompt);
+    wrap.querySelectorAll('.choice-tile').forEach(btn=>{
+      btn.onclick=()=>{
+        const opt = q.options[parseInt(btn.dataset.i)];
+        wrap.querySelectorAll('.choice-tile').forEach((b2,i2)=>{
+          b2.disabled=true;
+          if(q.options[i2].correct) b2.classList.add('correct');
+        });
+        if(opt.correct){ correct++; celebrate(false); }
+        else btn.classList.add('wrong');
+        const fb = wrap.querySelector('.feedback');
+        fb.textContent = opt.correct? 'Yes! Well done. ✅' : 'Good try! The best answer is highlighted green.';
+        fb.className='feedback '+(opt.correct?'good':'bad');
+        setTimeout(()=>{
+          if(idx<activity.questions.length-1){ idx++; paint(); }
+          else{ finishActivity(lesson, activity, correct, activity.questions.length); }
+        }, 1400);
+      };
+    });
+  }
+  paint();
+}
+
+/* ---------- CHOICE PAIRS ---------- */
+function renderChoicePairsActivity(wrap, lesson, activity){
+  let idx=0;
+  function paint(){
+    const r = activity.rounds[idx];
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="prompt">${r.prompt}</div>
+        <div class="two-choice">
+          <button class="choice-tile" id="optA"><span class="ce">${r.a.e}</span>${r.a.t}</button>
+          <button class="choice-tile" id="optB"><span class="ce">${r.b.e}</span>${r.b.t}</button>
+        </div>
+        <div class="feedback" id="fb"></div>
+      </div>`;
+    function chosen(t){
+      document.getElementById('fb').textContent = `Great choice — you chose ${t}! 🎉`;
+      document.getElementById('fb').className='feedback good';
+      celebrate(false);
+      document.getElementById('optA').disabled=true; document.getElementById('optB').disabled=true;
+      setTimeout(()=>{
+        if(idx<activity.rounds.length-1){ idx++; paint(); }
+        else{ finishActivity(lesson, activity, activity.rounds.length, activity.rounds.length); }
+      }, 1100);
+    }
+    document.getElementById('optA').onclick=()=>chosen(r.a.t);
+    document.getElementById('optB').onclick=()=>chosen(r.b.t);
+  }
+  paint();
+}
+
+/* ---------- PICTURE CHOICE ---------- */
+function renderPictureChoiceActivity(wrap, lesson, activity){
+  let selected=null;
+  function paint(){
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="grid-3">
+          ${activity.items.map((it,i)=>`
+            <button class="tile ${selected===i?'selected':''}" data-i="${i}"><span class="te">${it.e}</span>${it.t}</button>`).join('')}
+        </div>
+        <button class="btn btn-primary btn-wide" id="confirmBtn" style="margin-top:18px;" ${selected===null?'disabled':''}>This is what I want! ✅</button>
+      </div>`;
+    wrap.querySelectorAll('.tile').forEach(btn=>{
+      btn.onclick=()=>{ selected=parseInt(btn.dataset.i); paint(); };
+    });
+    document.getElementById('confirmBtn').onclick=()=>{
+      if(selected===null) return;
+      celebrate(true);
+      finishActivity(lesson, activity, 1, 1);
+    };
+  }
+  paint();
+}
+
+/* ---------- CHECKLIST ---------- */
+function renderChecklistActivity(wrap, lesson, activity){
+  const checked = new Array(activity.items.length).fill(false);
+  function paint(){
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="stack">
+          ${activity.items.map((t,i)=>`
+            <label class="radio-opt ${checked[i]?'checked':''}">
+              <input type="checkbox" data-i="${i}" ${checked[i]?'checked':''}> ${t}
+            </label>`).join('')}
+        </div>
+        <button class="btn btn-primary btn-wide" id="doneBtn" style="margin-top:16px;" ${checked.every(c=>c)?'':'disabled'}>We did it! ✅</button>
+      </div>`;
+    wrap.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+      cb.onchange=()=>{ checked[parseInt(cb.dataset.i)]=cb.checked; paint(); };
+    });
+    const db = document.getElementById('doneBtn');
+    if(db) db.onclick=()=> finishActivity(lesson, activity, activity.items.length, activity.items.length);
+  }
+  paint();
+}
+
+/* ---------- YES/NO (good helper) ---------- */
+function renderYesNoActivity(wrap, lesson, activity){
+  let idx=0, correct=0;
+  function paint(feedback){
+    const s = activity.statements[idx];
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="big-emoji">${s.e}</div>
+        <div class="prompt">${s.t}</div>
+        <div class="two-choice">
+          <button class="choice-tile" id="yesBtn"><span class="ce">👍</span>Good helper</button>
+          <button class="choice-tile" id="noBtn"><span class="ce">👎</span>Not so good</button>
+        </div>
+        <div class="feedback">${feedback||''}</div>
+      </div>`;
+    function answer(saidGood){
+      const right = saidGood===s.good;
+      if(right){ correct++; celebrate(false); }
+      const fb=wrap.querySelector('.feedback');
+      fb.textContent = right? 'That\'s right! ✅' : (s.good? 'Actually this IS a good helper. 🤔' : 'Actually this is NOT a good helper. 🤔');
+      fb.className='feedback '+(right?'good':'bad');
+      document.getElementById('yesBtn').disabled=true; document.getElementById('noBtn').disabled=true;
+      setTimeout(()=>{
+        if(idx<activity.statements.length-1){ idx++; paint(); }
+        else{ finishActivity(lesson, activity, correct, activity.statements.length); }
+      },1300);
+    }
+    document.getElementById('yesBtn').onclick=()=>answer(true);
+    document.getElementById('noBtn').onclick=()=>answer(false);
+  }
+  paint();
+}
+
+/* ---------- ROLEPLAY ---------- */
+function renderRoleplayActivity(wrap, lesson, activity){
+  let idx=0, correct=0;
+  function paint(){
+    const r = activity.rounds[idx];
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="big-emoji">${r.emoji}</div>
+        <div class="prompt">${r.scenario}</div>
+        <div class="stack">
+          ${r.options.map((o,i)=>`<button class="choice-tile item-row" style="justify-content:center;" data-i="${i}"><span class="ce" style="font-size:32px;">${o.e}</span>${o.t}</button>`).join('')}
+        </div>
+        <div class="feedback" id="fb"></div>
+      </div>`;
+    wrap.querySelectorAll('[data-i]').forEach(btn=>{
+      btn.onclick=()=>{
+        const o = r.options[parseInt(btn.dataset.i)];
+        wrap.querySelectorAll('[data-i]').forEach(b=>b.disabled=true);
+        if(o.correct){ correct++; celebrate(false); btn.classList.add('correct'); }
+        else btn.classList.add('wrong');
+        const fb=document.getElementById('fb');
+        fb.textContent = o.correct? 'Great choice! ✅' : 'Good try — think about what helps them best. 🤔';
+        fb.className='feedback '+(o.correct?'good':'bad');
+        setTimeout(()=>{
+          if(idx<activity.rounds.length-1){ idx++; paint(); }
+          else{ finishActivity(lesson, activity, correct, activity.rounds.length); }
+        },1400);
+      };
+    });
+  }
+  paint();
+}
+
+/* ---------- THUMBS (self-assessment) ---------- */
+function renderThumbsActivity(wrap, lesson, activity){
+  const answers = new Array(activity.statements.length).fill(null);
+  let idx=0;
+  function paint(){
+    const s = activity.statements[idx];
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="prompt">${s}</div>
+        <div class="two-choice">
+          <button class="choice-tile" id="up"><span class="ce">👍</span>Yes, I did!</button>
+          <button class="choice-tile" id="down"><span class="ce">👎</span>Not yet</button>
+        </div>
+        <div class="feedback">${idx+1} / ${activity.statements.length}</div>
+      </div>`;
+    function pick(v){
+      answers[idx]=v; celebrate(false);
+      if(idx<activity.statements.length-1){ idx++; paint(); }
+      else{ const yesCount=answers.filter(a=>a===true).length; finishActivity(lesson, activity, yesCount, activity.statements.length); }
+    }
+    document.getElementById('up').onclick=()=>pick(true);
+    document.getElementById('down').onclick=()=>pick(false);
+  }
+  paint();
+}
+
+/* ---------- MATCH ---------- */
+function renderMatchActivity(wrap, lesson, activity){
+  const probOrder = activity.pairs.map((p,i)=>i);
+  const helpOrder = shuffle(activity.pairs.map((p,i)=>i));
+  let selectedProb=null;
+  const matched=new Set();
+  let attempts=0, correct=0;
+  function paint(msg){
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="two-col">
+          <div>
+            <div class="col-label">Problem</div>
+            <div class="stack">
+              ${probOrder.map(i=>`
+                <button class="item-row ${matched.has(i)?'faded':''} ${selectedProb===i?'selected':''}" style="width:100%;justify-content:flex-start; ${selectedProb===i?'background:var(--accent-bg);border-color:var(--accent);':''}" data-i="${i}" ${matched.has(i)?'disabled':''}>
+                  <span class="ie">${activity.pairs[i].problem.e}</span>${activity.pairs[i].problem.t}
+                </button>`).join('')}
+            </div>
+          </div>
+          <div>
+            <div class="col-label">Helper</div>
+            <div class="stack">
+              ${helpOrder.map(i=>`
+                <button class="item-row helper-btn ${matched.has(i)?'faded':''}" style="width:100%;justify-content:flex-start;" data-i="${i}" ${matched.has(i)?'disabled':''}>
+                  <span class="ie">${activity.pairs[i].helper.e}</span>${activity.pairs[i].helper.t}
+                </button>`).join('')}
+            </div>
+          </div>
+        </div>
+        <div class="feedback ${msg&&msg.good?'good':(msg?'bad':'')}">${msg? msg.text : 'Tap a problem, then tap the matching helper.'}</div>
+      </div>`;
+    wrap.querySelectorAll('.item-row:not(.helper-btn)').forEach(btn=>{
+      btn.onclick=()=>{ selectedProb=parseInt(btn.dataset.i); paint(); };
+    });
+    wrap.querySelectorAll('.helper-btn').forEach(btn=>{
+      btn.onclick=()=>{
+        if(selectedProb===null) return;
+        const hIdx = parseInt(btn.dataset.i);
+        attempts++;
+        if(hIdx===selectedProb){
+          matched.add(hIdx); correct++; selectedProb=null;
+          if(matched.size===activity.pairs.length){
+            setTimeout(()=> finishActivity(lesson, activity, correct, activity.pairs.length), 500);
+            paint({good:true,text:'All matched! Amazing! 🎉'});
+          } else { celebrate(false); paint({good:true,text:'Great match! ✅'}); }
+        } else {
+          selectedProb=null;
+          paint({good:false,text:'Not quite — try again! 🤔'});
+        }
+      };
+    });
+  }
+  paint();
+}
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+/* ---------- INFO GALLERY ---------- */
+function renderInfoActivity(wrap, lesson, activity){
+  const seen = new Set();
+  function paint(){
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="info-gallery">
+          ${activity.cards.map((c,i)=>`
+            <div class="info-card">
+              <div class="ie2">${c.e}</div>
+              <b>${c.t}</b>
+              <p>${c.desc}</p>
+              <button data-i="${i}">🔊 Listen</button>
+            </div>`).join('')}
+        </div>
+        <button class="btn btn-primary btn-wide" id="doneBtn" style="margin-top:18px;">I've learned about these! ✅</button>
+      </div>`;
+    wrap.querySelectorAll('.info-card button').forEach(btn=>{
+      btn.onclick=()=>{ const c=activity.cards[parseInt(btn.dataset.i)]; speak(c.t+'. '+c.desc); seen.add(parseInt(btn.dataset.i)); };
+    });
+    document.getElementById('doneBtn').onclick=()=> finishActivity(lesson, activity, activity.cards.length, activity.cards.length);
+  }
+  paint();
+}
+
+/* ---------- PLANNER ---------- */
+function renderPlannerActivity(wrap, lesson, activity){
+  const choices = {};
+  function paint(sentence){
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        ${activity.fields.map(f=>`
+          <div class="field">
+            <label for="${f.key}">${f.label}</label>
+            <select id="${f.key}">
+              <option value="">Choose...</option>
+              ${f.options.map(o=>`<option value="${o}" ${choices[f.key]===o?'selected':''}>${o}</option>`).join('')}
+            </select>
+          </div>`).join('')}
+        <button class="btn btn-primary btn-wide" id="buildBtn">Build my plan ✅</button>
+        ${sentence? `
+          <div class="card" style="margin-top:16px; background:var(--accent-bg); border-color:var(--accent);">
+            <div class="prompt" style="font-size:20px;">${sentence}</div>
+            <div class="center"><button class="speak-btn" id="spk2">🔊 Read aloud</button></div>
+            <button class="btn btn-primary btn-wide" id="finishBtn" style="margin-top:10px;">Finish 🎉</button>
+          </div>`:''}
+      </div>`;
+    activity.fields.forEach(f=>{
+      document.getElementById(f.key).onchange=e=>{ choices[f.key]=e.target.value; };
+    });
+    document.getElementById('buildBtn').onclick=()=>{
+      if(!activity.fields.every(f=>choices[f.key])){ alert('Please choose an answer for Who, Where and How.'); return; }
+      const s = `I will go with ${choices.who} to the ${choices.where} by ${choices.how.toLowerCase()}.`;
+      celebrate(false);
+      paint(s);
+    };
+    if(sentence){
+      document.getElementById('spk2').onclick=()=>speak(sentence);
+      document.getElementById('finishBtn').onclick=()=> finishActivity(lesson, activity, 1, 1);
+    }
+  }
+  paint();
+}
+
+/* ---------- PROBLEM SELECT ---------- */
+function renderProblemSelectActivity(wrap, lesson, activity){
+  let selected=null;
+  function paint(confirmed){
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="radio-list">
+          ${activity.options.map((o,i)=>`
+            <label class="radio-opt ${selected===i?'checked':''}">
+              <input type="radio" name="prob" data-i="${i}" ${selected===i?'checked':''}> <span style="font-size:26px;">${o.e}</span> ${o.t}
+            </label>`).join('')}
+        </div>
+        ${confirmed? `
+          <div class="card" style="margin-top:16px; background:var(--accent-bg); border-color:var(--accent);">
+            <div class="prompt" style="font-size:20px;">"I need help with: ${activity.options[selected].t.toLowerCase()}"</div>
+            <div class="center"><button class="speak-btn" id="spk3">🔊 Read aloud</button></div>
+            <button class="btn btn-primary btn-wide" id="finishBtn" style="margin-top:10px;">Finish 🎉</button>
+          </div>` : `<button class="btn btn-primary btn-wide" id="confirmBtn" style="margin-top:16px;" ${selected===null?'disabled':''}>This is my problem ✅</button>`}
+      </div>`;
+    wrap.querySelectorAll('input[name=prob]').forEach(r=>{
+      r.onchange=()=>{ selected=parseInt(r.dataset.i); paint(); };
+    });
+    const cb = document.getElementById('confirmBtn');
+    if(cb) cb.onclick=()=>{ celebrate(false); paint(true); };
+    if(confirmed){
+      const sentence = `I need help with ${activity.options[selected].t.toLowerCase()}`;
+      document.getElementById('spk3').onclick=()=>speak(sentence);
+      document.getElementById('finishBtn').onclick=()=> finishActivity(lesson, activity, 1, 1);
+    }
+  }
+  paint();
+}
+
+/* ---------- COMMUNITY ROLEPLAY (final big one) ---------- */
+function renderCommunityActivity(wrap, lesson, activity){
+  let idx=0, correct=0;
+  function paint(){
+    const s = activity.steps[idx];
+    wrap.innerHTML = `
+      <div class="card">
+        <div class="subtext">${activity.instruction}</div>
+        <div class="score-pill">Step ${idx+1} of ${activity.steps.length}: ${s.who}</div>
+        <div class="big-emoji">${s.emoji}</div>
+        <div class="prompt">${s.scenario}</div>
+        <div class="stack">
+          ${s.options.map((o,i)=>`<button class="choice-tile item-row" style="justify-content:center;" data-i="${i}"><span class="ce" style="font-size:32px;">${o.e}</span>${o.t}</button>`).join('')}
+        </div>
+        <div class="feedback" id="fb"></div>
+      </div>`;
+    wrap.querySelectorAll('[data-i]').forEach(btn=>{
+      btn.onclick=()=>{
+        const o = s.options[parseInt(btn.dataset.i)];
+        wrap.querySelectorAll('[data-i]').forEach(b=>b.disabled=true);
+        if(o.correct){ correct++; celebrate(false); btn.classList.add('correct'); }
+        else btn.classList.add('wrong');
+        const fb=document.getElementById('fb');
+        fb.textContent = o.correct? 'Yes! ✅' : 'Good try! 🤔';
+        fb.className='feedback '+(o.correct?'good':'bad');
+        setTimeout(()=>{
+          if(idx<activity.steps.length-1){ idx++; paint(); }
+          else{
+            wrap.innerHTML = `
+              <div class="card center">
+                <div class="big-emoji">🏆</div>
+                <div class="prompt">I can speak up! I can ask for help!</div>
+                <button class="btn btn-primary btn-wide" id="celebrateFinish" style="margin-top:14px;">Celebrate! 🎉</button>
+              </div>`;
+            document.getElementById('celebrateFinish').onclick=()=>{
+              celebrate(true);
+              finishActivity(lesson, activity, correct, activity.steps.length);
+            };
+          }
+        },1400);
+      };
+    });
+  }
+  paint();
+}
+
+/* ============================================================
+   SUMMARY SCREEN
+============================================================ */
+function renderSummaryShell(lesson){
+  const activity = getActivity(lesson.id, state.activityId);
+  const res = state.results[lesson.id][activity.id];
+  const pct = res.total? Math.round((res.correct/res.total)*100) : 100;
+  const badgeEmoji = pct>=80? '🏆' : (pct>=50? '🌟' : '💪');
+  return `
+  ${topbar('Well Done!', {})}
+  <div class="wrap">
+    <div class="card center">
+      <div class="summary-badge">${badgeEmoji}</div>
+      <h2>${activity.title} — Complete!</h2>
+      <p>${state.studentName? state.studentName+', y':'Y'}ou did ${res.total} out of ${res.total} parts of this activity.</p>
+      ${res.total>1 ? `<p class="score-pill">Score: ${res.correct} / ${res.total} ⭐</p>` : ''}
+      <div class="screenshot-tip">📸 Tip: You can take a screenshot of this screen to keep your work!</div>
+      <div class="summary-actions">
+        <button class="btn btn-primary" id="pdfBtn">⬇️ Download PDF Summary</button>
+        <button class="btn btn-secondary" id="menuBtn">📋 Back to ${lesson.title}</button>
+        <button class="btn btn-secondary" id="homeBtn">🏠 Home</button>
+      </div>
+    </div>
+  </div>`;
+}
+function attachSummaryEvents(lesson){
+  const activity = getActivity(lesson.id, state.activityId);
+  const res = state.results[lesson.id][activity.id];
+  document.getElementById('pdfBtn').onclick=()=> downloadActivityPDF(lesson, activity, res);
+  document.getElementById('menuBtn').onclick=()=>{ state.screen='lessonMenu'; render(); };
+  document.getElementById('homeBtn').onclick=goHome;
+}
+function downloadActivityPDF(lesson, activity, res){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(18); doc.text('Speaking Up! Advocacy — Activity Summary', 15, 20);
+    doc.setFontSize(12);
+    doc.text(`Student: ${state.studentName||'____________________'}`, 15, 34);
+    doc.text(`Lesson ${lesson.id}: ${lesson.title}`, 15, 44);
+    doc.text(`Activity: ${activity.title}`, 15, 54);
+    doc.text(`Score: ${res.correct} / ${res.total}`, 15, 64);
+    doc.text(`Completed: ${res.completedAt}`, 15, 74);
+    doc.text('Phoenix College — Local Offer', 15, 90);
+    doc.save(`${lesson.title.replace(/\s+/g,'_')}_${activity.id}_summary.pdf`);
+  }catch(e){ alert('Sorry, PDF download is not available right now. You can take a screenshot instead!'); }
+}
+
+/* ============================================================
+   PROGRESS SCREEN
+============================================================ */
+function renderProgress(){
+  const totalActivities = LESSONS.reduce((s,l)=>s+l.activities.length,0);
+  let done=0;
+  const rows = LESSONS.map(l=>{
+    const doneCount = l.activities.filter(a=> state.results[l.id] && state.results[l.id][a.id]).length;
+    done += doneCount;
+    const pct = Math.round((doneCount/l.activities.length)*100);
+    return `
+    <div class="progress-row">
+      <div class="pe">${l.emoji}</div>
+      <div class="pmeta">
+        <b>${l.id}. ${l.title}</b>
+        <div>${doneCount} / ${l.activities.length} activities complete</div>
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%; background:${l.color};"></div></div>
+      </div>
+    </div>`;
+  }).join('');
+  const allDone = done===totalActivities;
+  return `
+  ${topbar('🏅 My Progress', {back:'goHome()'})}
+  <div class="wrap">
+    <div class="card center">
+      <h2>${state.studentName? state.studentName+"'s" : 'My'} Advocacy Journey</h2>
+      <p>${done} out of ${totalActivities} activities complete.</p>
+      ${allDone? `<div class="big-emoji">🏆</div><p><b>You finished the whole term! Amazing work!</b></p>` : ''}
+    </div>
+    ${rows}
+    <div class="summary-actions">
+      <button class="btn btn-primary" id="pdfAllBtn">⬇️ Download Full Term Report (PDF)</button>
+      <button class="btn btn-secondary" onclick="goHome()">🏠 Home</button>
+    </div>
+  </div>`;
+}
+function attachProgressEvents(){
+  const btn = document.getElementById('pdfAllBtn');
+  if(btn) btn.onclick=downloadFullReportPDF;
+}
+function downloadFullReportPDF(){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    let y=20;
+    doc.setFontSize(18); doc.text('Speaking Up! Advocacy — Term Report', 15, y); y+=10;
+    doc.setFontSize(12);
+    doc.text(`Student: ${state.studentName||'____________________'}`, 15, y); y+=8;
+    doc.text('Phoenix College — Local Offer', 15, y); y+=8;
+    doc.text(`Date: ${new Date().toLocaleDateString()}`, 15, y); y+=14;
+    LESSONS.forEach(l=>{
+      if(y>260){ doc.addPage(); y=20; }
+      doc.setFontSize(14); doc.text(`Lesson ${l.id}: ${l.title}`, 15, y); y+=8;
+      doc.setFontSize(11);
+      l.activities.forEach(a=>{
+        const res = state.results[l.id] && state.results[l.id][a.id];
+        const line = res? `  - ${a.title}: Complete (${res.correct}/${res.total})` : `  - ${a.title}: Not yet done`;
+        doc.text(line, 18, y); y+=7;
+        if(y>270){ doc.addPage(); y=20; }
+      });
+      y+=6;
+    });
+    doc.save('Advocacy_Term_Report.pdf');
+  }catch(e){ alert('Sorry, PDF download is not available right now. You can take a screenshot instead!'); }
+}
+
+/* ============================================================
+   UTIL
+============================================================ */
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* ============================================================
+   INIT
+============================================================ */
+render();
+</script>
+</body>
+</html>

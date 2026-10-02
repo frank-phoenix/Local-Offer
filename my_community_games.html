@@ -1,0 +1,1496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0">
+<title>My Community Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --bg:#EAF4FF;
+    --bg-soft:#F5FAFF;
+    --primary:#2F6FED;
+    --primary-dark:#1E4FC4;
+    --secondary:#FFB800;
+    --success:#22A879;
+    --success-dark:#178F65;
+    --alert:#FF6F61;
+    --text:#1F2A44;
+    --text-soft:#4B5872;
+    --card:#FFFFFF;
+    --radius-lg:28px;
+    --radius-md:20px;
+    --radius-sm:14px;
+    --shadow:0 10px 26px rgba(31,42,68,0.14);
+    --shadow-sm:0 4px 12px rgba(31,42,68,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    font-family:'Atkinson Hyperlegible', Arial, sans-serif;
+    color:var(--text);
+    min-height:100vh;
+    overflow-x:hidden;
+  }
+  h1,h2,h3,.heading-font,button{
+    font-family:'Baloo 2', 'Atkinson Hyperlegible', Arial, sans-serif;
+  }
+  button{
+    cursor:pointer;
+    font-size:1em;
+    border:none;
+    background:none;
+    color:inherit;
+  }
+  input{
+    font-family:'Atkinson Hyperlegible', Arial, sans-serif;
+  }
+  button:focus-visible, a:focus-visible, input:focus-visible{
+    outline:4px solid var(--secondary);
+    outline-offset:3px;
+  }
+  #app{
+    max-width:1020px;
+    margin:0 auto;
+    padding:18px 18px 60px;
+    min-height:100vh;
+  }
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:14px;
+  }
+  .icon-btn{
+    width:58px;height:58px;
+    border-radius:50%;
+    background:var(--card);
+    box-shadow:var(--shadow-sm);
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;
+    flex:0 0 auto;
+    transition:transform .12s ease;
+  }
+  .icon-btn:active{transform:scale(.92);}
+  .topbar-title{
+    flex:1;
+    text-align:center;
+    font-size:1.15em;
+    font-weight:700;
+    color:var(--primary-dark);
+  }
+  /* ---------- Generic layout ---------- */
+  .center-col{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    text-align:center;
+  }
+  .big-heading{
+    font-size:2em;
+    font-weight:800;
+    color:var(--primary-dark);
+    margin:6px 0 4px;
+  }
+  .sub-heading{
+    font-size:1.2em;
+    color:var(--text-soft);
+    margin:0 0 20px;
+    font-weight:400;
+  }
+  .card{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:24px;
+  }
+  /* ---------- Buttons ---------- */
+  .action-btn{
+    font-family:'Baloo 2', sans-serif;
+    font-weight:700;
+    font-size:1.25em;
+    color:#fff;
+    background:var(--primary);
+    padding:16px 34px;
+    border-radius:100px;
+    box-shadow:var(--shadow-sm);
+    display:inline-flex;
+    align-items:center;
+    gap:10px;
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .action-btn:active{transform:scale(.96);}
+  .action-btn.secondary{background:var(--secondary); color:#402d00;}
+  .action-btn.success{background:var(--success);}
+  .action-btn.ghost{
+    background:var(--card);
+    color:var(--primary-dark);
+    border:3px solid var(--primary);
+  }
+  .action-btn:disabled{opacity:.4; pointer-events:none;}
+  /* ---------- Class select ---------- */
+  .class-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:18px;
+    width:100%;
+    margin-top:10px;
+  }
+  .class-tile{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:26px 16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    border:5px solid transparent;
+    transition:transform .12s ease;
+  }
+  .class-tile:active{transform:scale(.96);}
+  .class-tile .class-emoji{font-size:3em;}
+  .class-tile .class-name{font-size:1.3em; font-weight:800; color:var(--primary-dark);}
+  .class-tile .class-level{font-size:1em; color:var(--text-soft); font-weight:700;}
+  .class-tile.c-darren{border-color:#D9C9FF;}
+  .class-tile.c-frank{border-color:#BFD9FF;}
+  .class-tile.c-mo{border-color:#C8EFDD;}
+  .class-tile.c-elena{border-color:#FFD8B0;}
+
+  /* ---------- Hub tiles ---------- */
+  .tile-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+    gap:18px;
+    margin-top:8px;
+  }
+  .tile{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow);
+    padding:22px 16px 18px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    border:4px solid transparent;
+    transition:transform .12s ease, border-color .12s ease;
+    min-height:190px;
+    justify-content:center;
+  }
+  .tile:active{transform:scale(.96);}
+  .tile .tile-emoji{font-size:3.4em; line-height:1;}
+  .tile .tile-name{font-size:1.25em; font-weight:700; color:var(--primary-dark);}
+  .tile .tile-stars{font-size:1.1em; letter-spacing:2px;}
+  .tile.tile-1{border-color:#BFD9FF;}
+  .tile.tile-2{border-color:#FFE1A8;}
+  .tile.tile-3{border-color:#C8EFDD;}
+  .tile.tile-4{border-color:#FFD0CA;}
+  .tile.tile-5{border-color:#DCC9FF;}
+
+  /* ---------- Welcome / name picker ---------- */
+  .avatar-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:14px;
+    width:100%;
+    margin:18px 0 26px;
+  }
+  .avatar-btn{
+    background:var(--card);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+    padding:16px 10px;
+    font-size:1.15em;
+    font-weight:700;
+    color:var(--text);
+    border:4px solid transparent;
+    display:flex; flex-direction:column; align-items:center; gap:6px;
+  }
+  .avatar-btn .avatar-emoji{font-size:2.2em;}
+  .avatar-btn.selected{
+    border-color:var(--primary);
+    background:#EAF1FF;
+  }
+  /* ---------- Game header (in-game) ---------- */
+  .game-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .stat-pill{
+    background:var(--card);
+    box-shadow:var(--shadow-sm);
+    border-radius:100px;
+    padding:10px 18px;
+    font-weight:700;
+    font-size:1.05em;
+    display:flex;align-items:center;gap:8px;
+    color:var(--primary-dark);
+  }
+  .instruction-bar{
+    background:var(--card);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+    padding:16px 20px;
+    font-size:1.35em;
+    font-weight:700;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:18px;
+  }
+  .speaker-btn{
+    font-size:1.6em;
+    flex:0 0 auto;
+    background:var(--bg-soft);
+    border-radius:50%;
+    width:52px;height:52px;
+    display:flex;align-items:center;justify-content:center;
+    box-shadow:var(--shadow-sm);
+  }
+  .timer-track{
+    width:100%;
+    height:16px;
+    background:#DCE8FA;
+    border-radius:100px;
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .timer-fill{
+    height:100%;
+    background:var(--secondary);
+    border-radius:100px;
+    transition:width .1s linear;
+  }
+
+  /* ---------- Memory game ---------- */
+  .memory-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:12px;
+  }
+  .mem-card{
+    aspect-ratio:1/1;
+    background:var(--primary);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+    display:flex;align-items:center;justify-content:center;
+    font-size:2.4em;
+    color:#fff;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .mem-card.flipped{background:var(--card); color:var(--text); transform:rotateY(0);}
+  .mem-card.matched{background:#DFF6EC; color:var(--success-dark); box-shadow:none;}
+  .mem-card:active{transform:scale(.94);}
+  .mem-card .mem-label{font-size:.32em; font-weight:700; margin-top:4px;}
+  .mem-inner{display:flex;flex-direction:column;align-items:center;}
+
+  /* ---------- Matching game (columns) ---------- */
+  .match-cols{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+  }
+  .match-item{
+    width:100%;
+    background:var(--card);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+    padding:14px 10px;
+    margin-bottom:12px;
+    font-size:1.1em;
+    font-weight:700;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    border:4px solid transparent;
+    transition:transform .12s ease, border-color .12s;
+  }
+  .match-item .m-emoji{font-size:2em;}
+  .match-item.selected{border-color:var(--primary); background:#EAF1FF;}
+  .match-item.correct{border-color:var(--success); background:#DFF6EC; color:var(--success-dark);}
+  .match-item.shake{animation:shake .4s ease;}
+  .match-item:active{transform:scale(.96);}
+  @keyframes shake{
+    0%,100%{transform:translateX(0);}
+    20%{transform:translateX(-8px);}
+    40%{transform:translateX(8px);}
+    60%{transform:translateX(-6px);}
+    80%{transform:translateX(6px);}
+  }
+
+  /* ---------- Point & click / options grid ---------- */
+  .options-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px,1fr));
+    gap:16px;
+  }
+  .option-btn{
+    background:var(--card);
+    border-radius:var(--radius-md);
+    box-shadow:var(--shadow-sm);
+    padding:22px 10px;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+    font-size:1.15em;font-weight:700;
+    border:5px solid transparent;
+    transition:transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .option-btn .o-emoji{font-size:2.6em;}
+  .option-btn:active{transform:scale(.95);}
+  .option-btn.correct{border-color:var(--success); background:#DFF6EC;}
+  .option-btn.wrong{border-color:var(--alert); background:#FFE7E4;}
+  .option-btn.disabled{opacity:.45; pointer-events:none;}
+  .option-btn.shake{animation:shake .4s ease;}
+  .option-btn.writein{border-style:dashed; border-color:#C7CFE0; background:var(--bg-soft);}
+
+  /* write-in box */
+  .writein-box{
+    background:var(--bg-soft);
+    border-radius:var(--radius-md);
+    padding:18px;
+    margin-top:14px;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    align-items:center;
+  }
+  .writein-box input[type="text"]{
+    width:100%;
+    max-width:420px;
+    font-size:1.2em;
+    padding:14px 16px;
+    border-radius:var(--radius-sm);
+    border:3px solid #C7CFE0;
+  }
+
+  /* ---------- Target tapper ---------- */
+  .tap-grid{
+    display:grid;
+    grid-template-columns:repeat(2, 1fr);
+    gap:16px;
+    max-width:520px;
+    margin:0 auto;
+  }
+  .tap-btn{
+    background:var(--card);
+    border-radius:var(--radius-lg);
+    box-shadow:var(--shadow-sm);
+    padding:26px 10px;
+    font-size:1.15em;font-weight:700;
+    display:flex;flex-direction:column;align-items:center;gap:10px;
+    border:5px solid transparent;
+    transition:transform .1s ease;
+  }
+  .tap-btn .t-emoji{font-size:3em;}
+  .tap-btn:active{transform:scale(.94);}
+  .tap-btn.correct{border-color:var(--success); background:#DFF6EC;}
+  .tap-btn.wrong{opacity:.35;}
+  .tap-btn.reveal{border-color:var(--secondary); background:#FFF6DF;}
+
+  /* ---------- Planner ---------- */
+  .planner-steps{
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .step-dot{
+    width:16px;height:16px;border-radius:50%;
+    background:#DCE8FA;
+  }
+  .step-dot.active{background:var(--primary);}
+  .step-dot.done{background:var(--success);}
+  .plan-summary-line{
+    font-size:1.3em;
+    font-weight:700;
+    margin:10px 0;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    justify-content:center;
+  }
+  .plan-summary-line .p-emoji{font-size:1.6em;}
+
+  /* ---------- Summary / celebration screen ---------- */
+  .stars-row{
+    font-size:3em;
+    margin:10px 0 4px;
+    letter-spacing:8px;
+  }
+  .summary-detail{
+    background:var(--bg-soft);
+    border-radius:var(--radius-md);
+    padding:16px 20px;
+    margin:16px 0;
+    font-size:1.15em;
+    text-align:left;
+    width:100%;
+  }
+  .btn-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    justify-content:center;
+    margin-top:18px;
+  }
+  .screenshot-note{
+    margin-top:18px;
+    font-size:1.05em;
+    color:var(--text-soft);
+    background:#FFF6DF;
+    border-radius:var(--radius-sm);
+    padding:12px 16px;
+  }
+
+  /* ---------- Confetti canvas ---------- */
+  #confetti-canvas{
+    position:fixed;
+    top:0; left:0;
+    width:100vw; height:100vh;
+    pointer-events:none;
+    z-index:999;
+  }
+
+  @media (max-width:520px){
+    .memory-grid{grid-template-columns:repeat(3,1fr);}
+    .match-cols{grid-template-columns:1fr 1fr;}
+    .big-heading{font-size:1.6em;}
+    .instruction-bar{font-size:1.1em;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+<canvas id="confetti-canvas"></canvas>
+<div id="app"></div>
+
+<script>
+/* =========================================================
+   DATA — grounded in the "My Community" lesson (Local Offer)
+   ========================================================= */
+const CLASSES = [
+  {id:"darren", name:"Darren's Class", level:"P1", emoji:"🟣",
+    students:["Abdullah Al Fahim","Fatima Ilma Hussain","Rahi Anan Mahboob","Sajil Reza","Tahseen Kamali","Siam Mohammed","Mely Mia","Hassan Miah","Shakil Uddin","Seayum Chowdhury","Camila Ali"]},
+  {id:"frank", name:"Frank's Class", level:"P2", emoji:"🔵",
+    students:["Abdul Waheed","Ayan Jama","Aysha Uddin","Ethan Sandiford","Laely Begum","Reshma Miah","Siyam Ahmed","Tavazzul Hoque","Tobechi Nwachuka","Sajil Reza"]},
+  {id:"mo", name:"Mo's Class", level:"P3", emoji:"🟢",
+    students:["Abu Taher","Callum Bance","Reuben Patterson","Romaisa Sibous","Samad Ahmed","Tejan Coker","Yusuf Rashid","Andrea Siluabanza","Abdulshakur Abdullah","Adam Day","Sikelele Khafula"]},
+  {id:"elena", name:"Elena's Class", level:"P4", emoji:"🟠",
+    students:["Ibrahim Ahmed Kha","Chirag Sagar","Riha Akter","Francois Pollimis","Yousef Rahman","Labib Khan","Yacqoup Ali","Ibrahim Mahamud","Joe Walsh","Khadija Belal","Hajera Khanom"]}
+];
+
+// Classes with more independent readers get an extra "write your own" option
+const WRITE_IN_CLASSES = ["mo","elena"];
+
+const PLACES = [
+  {id:"home",       emoji:"🏠", name:"Home"},
+  {id:"college",    emoji:"🏫", name:"College"},
+  {id:"shop",       emoji:"🛒", name:"Shop"},
+  {id:"library",    emoji:"📚", name:"Library"},
+  {id:"park",       emoji:"🌳", name:"Park"},
+  {id:"health",     emoji:"🏥", name:"GP"},
+  {id:"cafe",       emoji:"☕", name:"Café"},
+  {id:"bus",        emoji:"🚌", name:"Bus Stop"},
+  {id:"museum",     emoji:"🏛️", name:"Museum"},
+  {id:"leisure",    emoji:"🏊", name:"Leisure Centre"},
+  {id:"hair",       emoji:"💇", name:"Hairdresser"},
+  {id:"community",  emoji:"🏢", name:"Community Centre"},
+  {id:"fitness",    emoji:"🏋️", name:"Fitness Centre"},
+  {id:"gym",        emoji:"💪", name:"Gym"},
+  {id:"restaurant", emoji:"🍽️", name:"Restaurant"},
+  {id:"market",     emoji:"🧺", name:"Market"},
+  {id:"mall",       emoji:"🛍️", name:"Shopping Centre"},
+  {id:"salon",      emoji:"💅", name:"Beauty Salon"},
+  {id:"bank",       emoji:"🏦", name:"Bank"},
+  {id:"hospital",   emoji:"🏨", name:"Hospital"},
+  {id:"dentist",    emoji:"🦷", name:"Dentist"}
+];
+function placeById(id){ return PLACES.find(p=>p.id===id); }
+
+const ACTIVITY_PAIRS = [
+  {placeId:"library",    activity:"Borrow a book",     aEmoji:"📖"},
+  {placeId:"shop",       activity:"Buy something",     aEmoji:"🛍️"},
+  {placeId:"park",       activity:"Walk and relax",    aEmoji:"🚶"},
+  {placeId:"cafe",       activity:"Have a drink",      aEmoji:"🥤"},
+  {placeId:"museum",     activity:"Look at things",    aEmoji:"🖼️"},
+  {placeId:"leisure",    activity:"Go swimming",       aEmoji:"🏊"},
+  {placeId:"hair",       activity:"Get a haircut",     aEmoji:"✂️"},
+  {placeId:"gym",        activity:"Do exercise",       aEmoji:"🏋️"},
+  {placeId:"restaurant", activity:"Eat a meal",        aEmoji:"🍝"},
+  {placeId:"market",     activity:"Buy fresh food",    aEmoji:"🥦"},
+  {placeId:"mall",       activity:"Go shopping",       aEmoji:"🏬"},
+  {placeId:"salon",      activity:"Get my nails done", aEmoji:"💅"},
+  {placeId:"bank",       activity:"Get money out",     aEmoji:"💷"},
+  {placeId:"dentist",    activity:"Check my teeth",    aEmoji:"🪥"},
+  {placeId:"hospital",   activity:"See a doctor",      aEmoji:"🩺"},
+  {placeId:"community",  activity:"Meet my friends",   aEmoji:"🤝"},
+  {placeId:"fitness",    activity:"Get fit",           aEmoji:"🤸"}
+];
+
+const QUESTIONS = [
+  {q:"Where can you borrow a book?",           correct:"library",    options:["library","shop","park"]},
+  {q:"Where can you buy food?",                correct:"shop",       options:["shop","library","cafe"]},
+  {q:"Where can you have a hot drink?",        correct:"cafe",       options:["cafe","museum","bus"]},
+  {q:"Where do you go to see the doctor?",     correct:"health",     options:["health","hair","park"]},
+  {q:"Where can you go swimming?",             correct:"leisure",    options:["leisure","museum","library"]},
+  {q:"Where can you get your hair cut?",       correct:"hair",       options:["hair","shop","bus"]},
+  {q:"Where do you catch a bus?",              correct:"bus",        options:["bus","cafe","museum"]},
+  {q:"Where can you do exercise?",             correct:"gym",        options:["gym","library","bank"]},
+  {q:"Where can you eat a meal?",              correct:"restaurant", options:["restaurant","dentist","museum"]},
+  {q:"Where can you buy fresh food?",          correct:"market",     options:["market","hospital","hair"]},
+  {q:"Where can you go shopping?",             correct:"mall",       options:["mall","park","dentist"]},
+  {q:"Where can you get your nails done?",     correct:"salon",      options:["salon","bus","bank"]},
+  {q:"Where can you get money out?",           correct:"bank",       options:["bank","cafe","leisure"]},
+  {q:"Where do you go to check your teeth?",   correct:"dentist",    options:["dentist","shop","park"]},
+  {q:"Where do you go if you feel very unwell?", correct:"hospital", options:["hospital","museum","cafe"]},
+  {q:"Where can you meet friends and join clubs?", correct:"community", options:["community","bank","dentist"]},
+  {q:"Where can you keep fit and healthy?",    correct:"fitness",    options:["fitness","hair","museum"]}
+];
+
+const HOW_OPTIONS = [
+  {id:"walk",        emoji:"🚶", name:"Walk"},
+  {id:"bus",         emoji:"🚌", name:"Bus"},
+  {id:"car",         emoji:"🚗", name:"Car"},
+  {id:"underground", emoji:"🚇", name:"Underground"},
+  {id:"overground",  emoji:"🚆", name:"Overground"},
+  {id:"dlr",         emoji:"🚈", name:"DLR"},
+  {id:"friend",      emoji:"🤝", name:"With a friend"}
+];
+const WHEN_OPTIONS = [
+  {id:"morning",       emoji:"☀️", name:"Morning"},
+  {id:"afternoon",     emoji:"🌤️", name:"Afternoon"},
+  {id:"after_college", emoji:"🏫", name:"After College"}
+];
+const WHO_OPTIONS = [
+  {id:"teacher", emoji:"👩‍🏫", name:"Teacher"},
+  {id:"coach",   emoji:"🧑‍💼", name:"Job Coach"},
+  {id:"staff",   emoji:"🙋", name:"Staff"},
+  {id:"family",  emoji:"👪", name:"Family"},
+  {id:"friend",  emoji:"🧑‍🤝‍🧑", name:"Friend"},
+  {id:"police",  emoji:"👮", name:"Police"},
+  {id:"manager", emoji:"🧑‍💻", name:"Manager"}
+];
+const WHERE_OPTIONS = PLACES.filter(p=>!["home","college","bus"].includes(p.id));
+
+/* =========================================================
+   STATE
+   ========================================================= */
+const state = {
+  classId: "",
+  className: "",
+  classLevel: "",
+  students: [],
+  allowWriteIn: false,
+  studentName: "",
+  soundOn: true,
+  lastAnnouncement: "",
+  stars: { memory:0, matching:0, pointclick:0, tapper:0, planner:0 }
+};
+
+/* =========================================================
+   HELPERS: speech, sound, confetti, shuffle
+   ========================================================= */
+function speak(text){
+  state.lastAnnouncement = text;
+  if(!state.soundOn) return;
+  if(!('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = 0.88;
+    u.pitch = 1.05;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function repeatAnnouncement(){ if(state.lastAnnouncement) speak(state.lastAnnouncement); }
+
+let audioCtx = null;
+function getAudioCtx(){
+  if(!audioCtx){
+    try{ audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }catch(e){ audioCtx = null; }
+  }
+  return audioCtx;
+}
+function tone(freq, start, dur, vol){
+  if(!state.soundOn) return;
+  const ctx = getAudioCtx();
+  if(!ctx) return;
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "sine";
+  osc.frequency.value = freq;
+  gain.gain.value = 0;
+  osc.connect(gain); gain.connect(ctx.destination);
+  const t0 = ctx.currentTime + start;
+  gain.gain.linearRampToValueAtTime(vol, t0 + 0.02);
+  gain.gain.linearRampToValueAtTime(0, t0 + dur);
+  osc.start(t0);
+  osc.stop(t0 + dur + 0.02);
+}
+function chimeCorrect(){ tone(660,0,0.18,0.14); tone(880,0.12,0.22,0.12); }
+function chimeGentle(){ tone(330,0,0.20,0.10); }
+function chimeCelebrate(){
+  [523,659,784,1047].forEach((f,i)=> tone(f, i*0.14, 0.28, 0.13));
+}
+
+function confettiBurst(){
+  const canvas = document.getElementById("confetti-canvas");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext("2d");
+  const colors = ["#2F6FED","#FFB800","#22A879","#FF6F61","#8E6BFF"];
+  const pieces = [];
+  const count = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 90;
+  for(let i=0;i<count;i++){
+    pieces.push({
+      x: Math.random()*canvas.width,
+      y: -20 - Math.random()*canvas.height*0.3,
+      size: 6+Math.random()*8,
+      color: colors[Math.floor(Math.random()*colors.length)],
+      speedY: 2+Math.random()*3,
+      speedX: (Math.random()-0.5)*2,
+      rot: Math.random()*360,
+      rotSpeed: (Math.random()-0.5)*10
+    });
+  }
+  let frame = 0;
+  const maxFrames = 130;
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.x += p.speedX; p.y += p.speedY; p.rot += p.rotSpeed;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+      ctx.restore();
+    });
+    frame++;
+    if(frame < maxFrames){ requestAnimationFrame(draw); }
+    else{ ctx.clearRect(0,0,canvas.width,canvas.height); }
+  }
+  draw();
+}
+
+function shuffle(arr){
+  const a = arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j = Math.floor(Math.random()*(i+1));
+    [a[i],a[j]] = [a[j],a[i]];
+  }
+  return a;
+}
+function pickN(arr,n){ return shuffle(arr).slice(0, Math.min(n, arr.length)); }
+
+function starsToText(n){
+  let s = "";
+  for(let i=0;i<3;i++){ s += i<n ? "⭐" : "☆"; }
+  return s;
+}
+
+/* =========================================================
+   PDF EXPORT
+   ========================================================= */
+function downloadResultsPDF(gameTitle, lines){
+  try{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(20);
+    doc.text("My Community Games", 20, 22);
+    doc.setFontSize(13);
+    doc.text((state.className || "Phoenix College") + (state.classLevel ? " (" + state.classLevel + ")" : ""), 20, 30);
+    doc.setDrawColor(47,111,237);
+    doc.line(20, 34, 190, 34);
+    doc.setFontSize(15);
+    doc.text(gameTitle, 20, 46);
+    doc.setFontSize(12);
+    const name = state.studentName ? state.studentName : "Learner";
+    doc.text("Name: " + name, 20, 56);
+    doc.text("Date: " + new Date().toLocaleDateString("en-GB"), 20, 64);
+    let y = 76;
+    doc.setFontSize(12);
+    lines.forEach(line=>{
+      const wrapped = doc.splitTextToSize(line, 165);
+      doc.text(wrapped, 20, y);
+      y += 8*wrapped.length;
+    });
+    y += 6;
+    doc.setFontSize(13);
+    doc.text("Well done, " + name + "! Great community learning today.", 20, y);
+    doc.save((name.replace(/\s+/g,"_")) + "_" + gameTitle.replace(/\s+/g,"_") + ".pdf");
+  }catch(e){
+    alert("Could not create the PDF right now. Please try again.");
+  }
+}
+
+/* =========================================================
+   ROUTER / APP SHELL
+   ========================================================= */
+const app = document.getElementById("app");
+let currentScreen = "classselect";
+
+function topBar(showHome){
+  return `
+    <div class="topbar">
+      ${showHome ? `<button class="icon-btn" id="homeBtn" aria-label="Home">🏠</button>` : `<div style="width:58px"></div>`}
+      <div class="topbar-title">My Community Games</div>
+      <button class="icon-btn" id="soundBtn" aria-label="Sound on or off">${state.soundOn ? "🔊" : "🔇"}</button>
+    </div>`;
+}
+function bindTopBar(){
+  const homeBtn = document.getElementById("homeBtn");
+  if(homeBtn) homeBtn.onclick = ()=>{ window.speechSynthesis && window.speechSynthesis.cancel(); goTo("hub"); };
+  const soundBtn = document.getElementById("soundBtn");
+  if(soundBtn) soundBtn.onclick = ()=>{
+    state.soundOn = !state.soundOn;
+    soundBtn.textContent = state.soundOn ? "🔊" : "🔇";
+    if(!state.soundOn && window.speechSynthesis) window.speechSynthesis.cancel();
+  };
+}
+function instructionBar(text){
+  return `
+    <div class="instruction-bar">
+      <span>${text}</span>
+      <button class="speaker-btn" id="repeatBtn" aria-label="Read this out loud">🔊</button>
+    </div>`;
+}
+function bindInstructionBar(){
+  const btn = document.getElementById("repeatBtn");
+  if(btn) btn.onclick = repeatAnnouncement;
+}
+
+function goTo(screen, opts){
+  currentScreen = screen;
+  window.scrollTo(0,0);
+  if(window.speechSynthesis) window.speechSynthesis.cancel();
+  const renderers = {
+    classselect: renderClassSelect,
+    welcome: renderWelcome,
+    hub: renderHub,
+    memory: renderMemory,
+    matching: renderMatching,
+    pointclick: renderPointClick,
+    tapper: renderTapper,
+    planner: renderPlanner
+  };
+  renderers[screen](opts);
+}
+
+/* =========================================================
+   SCREEN: CLASS SELECT
+   ========================================================= */
+function renderClassSelect(){
+  app.innerHTML = `
+    ${topBar(false)}
+    <div class="center-col">
+      <div style="font-size:4em;">🏘️</div>
+      <div class="big-heading">My Community Games</div>
+      <div class="sub-heading">Which class is playing today?</div>
+      <div class="class-grid">
+        ${CLASSES.map(c=>`
+          <button class="class-tile c-${c.id}" data-id="${c.id}">
+            <div class="class-emoji">${c.emoji}</div>
+            <div class="class-name">${c.name}</div>
+            <div class="class-level">${c.level}</div>
+          </button>`).join("")}
+      </div>
+    </div>
+  `;
+  bindTopBar();
+  speak("Which class is playing today?");
+  document.querySelectorAll(".class-tile").forEach(btn=>{
+    btn.onclick = ()=>{
+      const cls = CLASSES.find(c=>c.id===btn.dataset.id);
+      state.classId = cls.id;
+      state.className = cls.name;
+      state.classLevel = cls.level;
+      state.students = cls.students;
+      state.allowWriteIn = WRITE_IN_CLASSES.includes(cls.id);
+      speak(cls.name);
+      goTo("welcome");
+    };
+  });
+}
+
+/* =========================================================
+   SCREEN: WELCOME / CHOOSE NAME
+   ========================================================= */
+function renderWelcome(){
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="center-col">
+      <div style="font-size:3.4em;">🙂</div>
+      <div class="big-heading">${state.className}</div>
+      <div class="sub-heading">Who is playing today?</div>
+      <div class="card" style="width:100%;">
+        <div class="avatar-grid">
+          ${state.students.map(s=>`
+            <button class="avatar-btn" data-name="${s}">
+              <span class="avatar-emoji">🙂</span>
+              <span>${s}</span>
+            </button>`).join("")}
+        </div>
+        <button class="action-btn" id="startBtn">▶️ Start</button>
+      </div>
+    </div>
+  `;
+  bindTopBar();
+  document.getElementById("homeBtn").onclick = ()=> goTo("classselect");
+  let selected = "";
+  document.querySelectorAll(".avatar-btn").forEach(btn=>{
+    btn.onclick = ()=>{
+      document.querySelectorAll(".avatar-btn").forEach(b=>b.classList.remove("selected"));
+      btn.classList.add("selected");
+      selected = btn.dataset.name;
+      speak(selected);
+    };
+  });
+  document.getElementById("startBtn").onclick = ()=>{
+    state.studentName = selected || "Learner";
+    speak("Hello " + state.studentName + "! Let's play and learn about our community.");
+    goTo("hub");
+  };
+}
+
+/* =========================================================
+   SCREEN: HUB
+   ========================================================= */
+function renderHub(){
+  const greetName = state.studentName || "Learner";
+  app.innerHTML = `
+    ${topBar(false)}
+    <div class="center-col">
+      <div class="big-heading">Hi, ${greetName}! 👋</div>
+      <div class="sub-heading">${state.className} • Choose a game about our community.</div>
+      <div class="tile-grid">
+        <button class="tile tile-1" data-game="memory">
+          <div class="tile-emoji">🧠</div>
+          <div class="tile-name">Memory Match</div>
+          <div class="tile-stars">${starsToText(state.stars.memory)}</div>
+        </button>
+        <button class="tile tile-2" data-game="matching">
+          <div class="tile-emoji">🔗</div>
+          <div class="tile-name">Matching Game</div>
+          <div class="tile-stars">${starsToText(state.stars.matching)}</div>
+        </button>
+        <button class="tile tile-3" data-game="pointclick">
+          <div class="tile-emoji">👉</div>
+          <div class="tile-name">Find It!</div>
+          <div class="tile-stars">${starsToText(state.stars.pointclick)}</div>
+        </button>
+        <button class="tile tile-4" data-game="tapper">
+          <div class="tile-emoji">🎯</div>
+          <div class="tile-name">Target Tapper</div>
+          <div class="tile-stars">${starsToText(state.stars.tapper)}</div>
+        </button>
+        <button class="tile tile-5" data-game="planner">
+          <div class="tile-emoji">🗺️</div>
+          <div class="tile-name">Plan My Trip</div>
+          <div class="tile-stars">${starsToText(state.stars.planner)}</div>
+        </button>
+        <button class="tile" id="changeNameTile" style="border-color:#eee;">
+          <div class="tile-emoji">🔄</div>
+          <div class="tile-name">Change Name</div>
+        </button>
+        <button class="tile" id="changeClassTile" style="border-color:#eee;">
+          <div class="tile-emoji">🏫</div>
+          <div class="tile-name">Change Class</div>
+        </button>
+      </div>
+    </div>
+  `;
+  bindTopBar();
+  speak("Hi " + greetName + ". Choose a game.");
+  document.querySelectorAll(".tile[data-game]").forEach(t=>{
+    t.onclick = ()=> goTo(t.dataset.game);
+  });
+  document.getElementById("changeNameTile").onclick = ()=> goTo("welcome");
+  document.getElementById("changeClassTile").onclick = ()=> goTo("classselect");
+}
+
+/* =========================================================
+   SHARED SUMMARY SCREEN
+   ========================================================= */
+function renderSummary({gameKey, gameTitle, headline, detailLines, pdfLines, starCount}){
+  state.stars[gameKey] = Math.max(state.stars[gameKey]||0, starCount);
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="center-col">
+      <div style="font-size:3.4em;">🎉</div>
+      <div class="big-heading">${headline}</div>
+      <div class="stars-row">${starsToText(starCount)}</div>
+      <div class="card" style="width:100%;">
+        <div class="summary-detail">
+          ${detailLines.map(l=>`<div>${l}</div>`).join("")}
+        </div>
+        <div class="btn-row">
+          <button class="action-btn" id="playAgainBtn">🔁 Play Again</button>
+          <button class="action-btn ghost" id="backHubBtn">🏠 More Games</button>
+          <button class="action-btn secondary" id="pdfBtn">📄 Download Results</button>
+        </div>
+        <div class="screenshot-note">📸 Tip: take a screenshot of this screen to show your teacher!</div>
+      </div>
+    </div>
+  `;
+  bindTopBar();
+  speak(headline + ". " + detailLines.join(". ").replace(/<[^>]+>/g,""));
+  confettiBurst();
+  chimeCelebrate();
+  document.getElementById("playAgainBtn").onclick = ()=> goTo(gameKey);
+  document.getElementById("backHubBtn").onclick = ()=> goTo("hub");
+  document.getElementById("pdfBtn").onclick = ()=> downloadResultsPDF(gameTitle, pdfLines);
+}
+
+/* =========================================================
+   GAME 1: MEMORY MATCH
+   ========================================================= */
+function renderMemory(){
+  const chosen = pickN(PLACES, 6);
+  let deck = shuffle([...chosen, ...chosen]).map((p,i)=>({...p, uid:i, matched:false}));
+  let flipped = [];
+  let matchedPairs = 0;
+  let moves = 0;
+  let lock = false;
+  const startTime = Date.now();
+
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="game-header">
+      <div class="stat-pill">🧠 Pairs found: <span id="pairsCount">0</span>/6</div>
+      <div class="stat-pill">👣 Tries: <span id="movesCount">0</span></div>
+    </div>
+    ${instructionBar("Tap two cards to find matching pairs!")}
+    <div class="memory-grid" id="memGrid"></div>
+  `;
+  bindTopBar();
+  bindInstructionBar();
+  speak("Tap two cards to find the matching pairs.");
+
+  const grid = document.getElementById("memGrid");
+  function draw(){
+    grid.innerHTML = deck.map(c=>{
+      let cls = "mem-card";
+      if(c.matched) cls += " matched";
+      else if(flipped.find(f=>f.uid===c.uid)) cls += " flipped";
+      const showFace = c.matched || flipped.find(f=>f.uid===c.uid);
+      return `<button class="${cls}" data-uid="${c.uid}">
+        ${showFace
+          ? `<span class="mem-inner"><span>${c.emoji}</span><span class="mem-label">${c.name}</span></span>`
+          : `❓`}
+      </button>`;
+    }).join("");
+    grid.querySelectorAll(".mem-card").forEach(btn=>{
+      btn.onclick = ()=> onCardTap(parseInt(btn.dataset.uid,10));
+    });
+  }
+
+  function onCardTap(uid){
+    if(lock) return;
+    const card = deck.find(c=>c.uid===uid);
+    if(!card || card.matched || flipped.find(f=>f.uid===uid)) return;
+    flipped.push(card);
+    speak(card.name);
+    draw();
+    if(flipped.length === 2){
+      moves++;
+      document.getElementById("movesCount").textContent = moves;
+      lock = true;
+      const [a,b] = flipped;
+      if(a.id === b.id){
+        setTimeout(()=>{
+          a.matched = true; b.matched = true;
+          matchedPairs++;
+          document.getElementById("pairsCount").textContent = matchedPairs;
+          flipped = [];
+          lock = false;
+          chimeCorrect();
+          draw();
+          if(matchedPairs === 6){
+            const seconds = Math.round((Date.now()-startTime)/1000);
+            setTimeout(()=>{
+              renderSummary({
+                gameKey:"memory",
+                gameTitle:"Memory Match",
+                headline: state.studentName + ", you found all 6 pairs!",
+                detailLines:[
+                  "🧠 Pairs found: 6 out of 6",
+                  "👣 Tries: " + moves,
+                  "⏱️ Time: " + seconds + " seconds"
+                ],
+                pdfLines:[
+                  "Game: Memory Match",
+                  "Pairs found: 6 out of 6",
+                  "Tries: " + moves,
+                  "Time: " + seconds + " seconds"
+                ],
+                starCount: moves<=8 ? 3 : (moves<=13 ? 2 : 1)
+              });
+            }, 500);
+          }
+        }, 550);
+      } else {
+        setTimeout(()=>{
+          flipped = [];
+          lock = false;
+          draw();
+        }, 900);
+      }
+    }
+  }
+  draw();
+}
+
+/* =========================================================
+   GAME 2: MATCHING GAME (place -> activity)
+   ========================================================= */
+function renderMatching(){
+  const pairs = pickN(ACTIVITY_PAIRS, 6);
+  const leftItems = shuffle(pairs.map(p=>({...p, place: placeById(p.placeId)})));
+  const rightItems = shuffle(pairs.map(p=>({...p})));
+  let selectedLeft = null;
+  let correctCount = 0;
+
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="game-header">
+      <div class="stat-pill">🔗 Matched: <span id="matchCount">0</span>/6</div>
+    </div>
+    ${instructionBar("Tap a place, then tap what you do there!")}
+    <div class="match-cols">
+      <div id="leftCol"></div>
+      <div id="rightCol"></div>
+    </div>
+  `;
+  bindTopBar();
+  bindInstructionBar();
+  speak("Tap a place, then tap what you do there.");
+
+  const leftCol = document.getElementById("leftCol");
+  const rightCol = document.getElementById("rightCol");
+
+  function draw(){
+    leftCol.innerHTML = leftItems.map(item=>{
+      let cls = "match-item";
+      if(item.done) cls += " correct";
+      else if(selectedLeft && selectedLeft.placeId===item.placeId) cls += " selected";
+      return `<button class="${cls}" data-place="${item.placeId}" ${item.done?"disabled":""}>
+        <span class="m-emoji">${item.place.emoji}</span>
+        <span>${item.place.name}</span>
+      </button>`;
+    }).join("");
+    rightCol.innerHTML = rightItems.map(item=>{
+      let cls = "match-item";
+      if(item.done) cls += " correct";
+      return `<button class="${cls}" data-place="${item.placeId}" ${item.done?"disabled":""}>
+        <span class="m-emoji">${item.aEmoji}</span>
+        <span>${item.activity}</span>
+      </button>`;
+    }).join("");
+
+    leftCol.querySelectorAll(".match-item").forEach(btn=>{
+      btn.onclick = ()=>{
+        const pid = btn.dataset.place;
+        selectedLeft = leftItems.find(i=>i.placeId===pid);
+        speak(selectedLeft.place.name);
+        draw();
+      };
+    });
+    rightCol.querySelectorAll(".match-item").forEach(btn=>{
+      btn.onclick = ()=>{
+        if(!selectedLeft) { speak("First tap a place."); return; }
+        const pid = btn.dataset.place;
+        if(pid === selectedLeft.placeId){
+          const li = leftItems.find(i=>i.placeId===pid);
+          const ri = rightItems.find(i=>i.placeId===pid);
+          li.done = true; ri.done = true;
+          correctCount++;
+          document.getElementById("matchCount").textContent = correctCount;
+          chimeCorrect();
+          speak("Well done! " + li.place.name + ", " + ri.activity);
+          selectedLeft = null;
+          draw();
+          if(correctCount === 6){
+            setTimeout(()=>{
+              renderSummary({
+                gameKey:"matching",
+                gameTitle:"Matching Game",
+                headline: state.studentName + ", you matched them all!",
+                detailLines:[
+                  "🔗 Matched: 6 out of 6 places",
+                  "You know what to do in your community!"
+                ],
+                pdfLines:[
+                  "Game: Matching Game (Place to Activity)",
+                  "Matched: 6 out of 6"
+                ],
+                starCount: 3
+              });
+            }, 500);
+          }
+        } else {
+          btn.classList.add("shake");
+          speak("Try again.");
+          setTimeout(()=>{ btn.classList.remove("shake"); }, 400);
+        }
+      };
+    });
+  }
+  draw();
+}
+
+/* =========================================================
+   GAME 3: FIND IT! (point and click)
+   ========================================================= */
+function renderPointClick(){
+  const questions = pickN(QUESTIONS, 6);
+  let index = 0;
+  let firstTryCorrect = 0;
+  let usedFirstTry = true;
+
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="game-header">
+      <div class="stat-pill">👉 Question: <span id="qIndex">1</span>/${questions.length}</div>
+    </div>
+    ${instructionBar(questions[0].q)}
+    <div class="options-grid" id="optGrid"></div>
+  `;
+  bindTopBar();
+  bindInstructionBar();
+
+  const optGrid = document.getElementById("optGrid");
+  const instrSpan = document.querySelector(".instruction-bar span");
+
+  function drawQuestion(){
+    const cur = questions[index];
+    usedFirstTry = true;
+    instrSpan.textContent = cur.q;
+    state.lastAnnouncement = cur.q;
+    speak(cur.q);
+    document.getElementById("qIndex").textContent = index+1;
+    const opts = shuffle(cur.options.map(id=>placeById(id)));
+    optGrid.innerHTML = opts.map(p=>`
+      <button class="option-btn" data-id="${p.id}">
+        <span class="o-emoji">${p.emoji}</span>
+        <span>${p.name}</span>
+      </button>`).join("");
+    optGrid.querySelectorAll(".option-btn").forEach(btn=>{
+      btn.onclick = ()=>{
+        if(btn.classList.contains("disabled")) return;
+        if(btn.dataset.id === cur.correct){
+          btn.classList.add("correct");
+          chimeCorrect();
+          speak("Well done!");
+          if(usedFirstTry) firstTryCorrect++;
+          optGrid.querySelectorAll(".option-btn").forEach(b=>b.classList.add("disabled"));
+          setTimeout(()=>{
+            index++;
+            if(index < questions.length){ drawQuestion(); }
+            else{
+              setTimeout(()=>{
+                renderSummary({
+                  gameKey:"pointclick",
+                  gameTitle:"Find It!",
+                  headline: state.studentName + ", you found every place!",
+                  detailLines:[
+                    "👉 Questions completed: " + questions.length + " out of " + questions.length,
+                    "⭐ First try correct: " + firstTryCorrect + " out of " + questions.length
+                  ],
+                  pdfLines:[
+                    "Game: Find It! (Point and Click)",
+                    "Questions completed: " + questions.length + " out of " + questions.length,
+                    "First try correct: " + firstTryCorrect + " out of " + questions.length
+                  ],
+                  starCount: firstTryCorrect>=questions.length-1 ? 3 : (firstTryCorrect>=Math.ceil(questions.length/2) ? 2 : 1)
+                });
+              }, 400);
+            }
+          }, 700);
+        } else {
+          usedFirstTry = false;
+          btn.classList.add("wrong","shake");
+          chimeGentle();
+          speak("Try again.");
+          setTimeout(()=>{ btn.classList.remove("shake"); }, 400);
+        }
+      };
+    });
+  }
+  drawQuestion();
+}
+
+/* =========================================================
+   GAME 4: TARGET TAPPER
+   ========================================================= */
+function renderTapper(){
+  const rounds = pickN(PLACES, 6);
+  let index = 0;
+  let hits = 0;
+  let roundTimer = null;
+  const ROUND_MS = 8000;
+
+  app.innerHTML = `
+    ${topBar(true)}
+    <div class="game-header">
+      <div class="stat-pill">🎯 Round: <span id="rIndex">1</span>/6</div>
+      <div class="stat-pill">✅ Hits: <span id="hitCount">0</span></div>
+    </div>
+    ${instructionBar("Get ready...")}
+    <div class="timer-track"><div class="timer-fill" id="timerFill" style="width:100%;"></div></div>
+    <div class="tap-grid" id="tapGrid"></div>
+  `;
+  bindTopBar();
+  bindInstructionBar();
+
+  const tapGrid = document.getElementById("tapGrid");
+  const instrSpan = document.querySelector(".instruction-bar span");
+  const timerFill = document.getElementById("timerFill");
+
+  function drawRound(){
+    document.getElementById("rIndex").textContent = index+1;
+    const target = rounds[index];
+    const distractorsPool = PLACES.filter(p=>p.id!==target.id);
+    const distractors = pickN(distractorsPool, 3);
+    const options = shuffle([target, ...distractors]);
+    const text = "Tap the " + target.name + "!";
+    instrSpan.textContent = text;
+    state.lastAnnouncement = text;
+    speak(text);
+
+    tapGrid.innerHTML = options.map(p=>`
+      <button class="tap-btn" data-id="${p.id}">
+        <span class="t-emoji">${p.emoji}</span>
+        <span>${p.name}</span>
+      </button>`).join("");
+
+    let elapsed = 0;
+    timerFill.style.width = "100%";
+    clearInterval(roundTimer);
+    roundTimer = setInterval(()=>{
+      elapsed += 100;
+      const pct = Math.max(0, 100 - (elapsed/ROUND_MS)*100);
+      timerFill.style.width = pct + "%";
+      if(elapsed >= ROUND_MS){
+        clearInterval(roundTimer);
+        revealAndAdvance(target);
+      }
+    }, 100);
+
+    tapGrid.querySelectorAll(".tap-btn").forEach(btn=>{
+      btn.onclick = ()=>{
+        if(btn.classList.contains("locked")) return;
+        tapGrid.querySelectorAll(".tap-btn").forEach(b=>b.classList.add("locked"));
+        if(btn.dataset.id === target.id){
+          clearInterval(roundTimer);
+          btn.classList.add("correct");
+          chimeCorrect();
+          hits++;
+          document.getElementById("hitCount").textContent = hits;
+          speak("Yes! " + target.name + "!");
+          setTimeout(nextRound, 700);
+        } else {
+          btn.classList.add("wrong");
+          chimeGentle();
+          speak("Try again.");
+          setTimeout(()=>{
+            tapGrid.querySelectorAll(".tap-btn").forEach(b=>b.classList.remove("locked"));
+          }, 500);
+        }
+      };
+    });
+  }
+
+  function revealAndAdvance(target){
+    tapGrid.querySelectorAll(".tap-btn").forEach(b=>{
+      if(b.dataset.id === target.id) b.classList.add("reveal");
+    });
+    speak("This is the " + target.name + ".");
+    setTimeout(nextRound, 900);
+  }
+
+  function nextRound(){
+    index++;
+    if(index < rounds.length){
+      drawRound();
+    } else {
+      clearInterval(roundTimer);
+      setTimeout(()=>{
+        renderSummary({
+          gameKey:"tapper",
+          gameTitle:"Target Tapper",
+          headline: state.studentName + ", great tapping!",
+          detailLines:[
+            "🎯 Rounds played: 6",
+            "✅ Correct taps: " + hits + " out of 6"
+          ],
+          pdfLines:[
+            "Game: Target Tapper",
+            "Rounds played: 6",
+            "Correct taps: " + hits + " out of 6"
+          ],
+          starCount: hits>=5 ? 3 : (hits>=3 ? 2 : 1)
+        });
+      }, 400);
+    }
+  }
+  drawRound();
+}
+
+/* =========================================================
+   GAME 5: PLAN MY TRIP
+   ========================================================= */
+function renderPlanner(){
+  const steps = [
+    {key:"where", label:"Where do you want to go?", options: WHERE_OPTIONS, icon:"📍"},
+    {key:"how",   label:"How will you get there?",  options: HOW_OPTIONS,   icon:"🚌"},
+    {key:"when",  label:"When will you go?",         options: WHEN_OPTIONS, icon:"🕐"},
+    {key:"who",   label:"Who can help you?",          options: WHO_OPTIONS, icon:"🆘"}
+  ];
+  let stepIndex = 0;
+  const answers = {};
+
+  function selectAnswer(step, opt){
+    answers[step.key] = opt;
+    chimeCorrect();
+    speak(opt.name + "! Great choice.");
+    setTimeout(()=>{
+      stepIndex++;
+      if(stepIndex < steps.length){ drawStep(); }
+      else{ drawPlanSummary(); }
+    }, 650);
+  }
+
+  function drawStep(){
+    const step = steps[stepIndex];
+    app.innerHTML = `
+      ${topBar(true)}
+      <div class="planner-steps">
+        ${steps.map((s,i)=>`<div class="step-dot ${i<stepIndex?'done':(i===stepIndex?'active':'')}"></div>`).join("")}
+      </div>
+      ${instructionBar(step.label)}
+      <div class="options-grid" id="planGrid"></div>
+      ${state.allowWriteIn ? `
+        <div class="writein-box" id="writeInBox" style="display:none;">
+          <div style="font-weight:700;">✏️ Type something different:</div>
+          <input type="text" id="writeInText" maxlength="40" placeholder="Type here...">
+          <button class="action-btn success" id="writeInGo">✅ Use this</button>
+        </div>
+      ` : ""}
+    `;
+    bindTopBar();
+    bindInstructionBar();
+    speak(step.label);
+
+    const grid = document.getElementById("planGrid");
+    grid.innerHTML = step.options.map(o=>`
+      <button class="option-btn" data-id="${o.id}">
+        <span class="o-emoji">${o.emoji}</span>
+        <span>${o.name}</span>
+      </button>`).join("");
+
+    if(state.allowWriteIn){
+      grid.innerHTML += `
+        <button class="option-btn writein" id="writeInToggle">
+          <span class="o-emoji">✏️</span>
+          <span>Something different</span>
+        </button>`;
+    }
+
+    grid.querySelectorAll(".option-btn:not(.writein)").forEach(btn=>{
+      btn.onclick = ()=>{
+        const opt = step.options.find(o=>o.id===btn.dataset.id);
+        btn.classList.add("correct");
+        grid.querySelectorAll(".option-btn").forEach(b=>b.classList.add("disabled"));
+        selectAnswer(step, opt);
+      };
+    });
+
+    const toggle = document.getElementById("writeInToggle");
+    if(toggle){
+      toggle.onclick = ()=>{
+        document.getElementById("writeInBox").style.display = "flex";
+        document.getElementById("writeInText").focus();
+        speak("Type what you would like.");
+      };
+      document.getElementById("writeInGo").onclick = ()=>{
+        const val = document.getElementById("writeInText").value.trim();
+        if(!val) return;
+        grid.querySelectorAll(".option-btn").forEach(b=>b.classList.add("disabled"));
+        selectAnswer(step, {id:"custom_"+Date.now(), emoji: step.icon, name: val});
+      };
+    }
+  }
+
+  function drawPlanSummary(){
+    const w = answers.where, h = answers.how, wn = answers.when, wo = answers.who;
+    const sentence = "I will go to the " + w.name + ". I will go by " + h.name.toLowerCase() +
+      ". I will go in the " + wn.name.toLowerCase() + ". " + wo.name + " can help me.";
+    app.innerHTML = `
+      ${topBar(true)}
+      <div class="center-col">
+        <div style="font-size:3.4em;">🗺️</div>
+        <div class="big-heading">${state.studentName}'s Community Plan</div>
+        <div class="card" style="width:100%;">
+          <div class="plan-summary-line"><span class="p-emoji">📍</span><span>${w.emoji} ${w.name}</span></div>
+          <div class="plan-summary-line"><span class="p-emoji">🚌</span><span>${h.emoji} ${h.name}</span></div>
+          <div class="plan-summary-line"><span class="p-emoji">🕐</span><span>${wn.emoji} ${wn.name}</span></div>
+          <div class="plan-summary-line"><span class="p-emoji">🆘</span><span>${wo.emoji} ${wo.name}</span></div>
+          <div class="btn-row">
+            <button class="action-btn" id="playAgainBtn">🔁 Plan Again</button>
+            <button class="action-btn ghost" id="backHubBtn">🏠 More Games</button>
+            <button class="action-btn secondary" id="pdfBtn">📄 Download My Plan</button>
+          </div>
+          <div class="screenshot-note">📸 Tip: take a screenshot of your plan to show your teacher or job coach!</div>
+        </div>
+      </div>
+    `;
+    bindTopBar();
+    speak(sentence);
+    confettiBurst();
+    chimeCelebrate();
+    state.stars.planner = 3;
+    document.getElementById("playAgainBtn").onclick = ()=> goTo("planner");
+    document.getElementById("backHubBtn").onclick = ()=> goTo("hub");
+    document.getElementById("pdfBtn").onclick = ()=> downloadResultsPDF("Plan My Trip", [
+      "Game: Plan My Trip (Travel Planning)",
+      "Where: " + w.name,
+      "How: " + h.name,
+      "When: " + wn.name,
+      "Who can help: " + wo.name,
+      "",
+      sentence
+    ]);
+  }
+
+  drawStep();
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+window.addEventListener("load", ()=>{
+  window.addEventListener("resize", ()=>{
+    const c = document.getElementById("confetti-canvas");
+    c.width = window.innerWidth; c.height = window.innerHeight;
+  });
+  goTo("classselect");
+});
+</script>
+</body>
+</html>

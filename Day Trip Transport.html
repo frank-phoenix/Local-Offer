@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Our Day Trip - How Did We Travel?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --sky:#EAF6FF;
+    --sky-deep:#CDEBFF;
+    --navy:#0E2A4A;
+    --navy-soft:#1B3A6B;
+    --white:#FFFFFF;
+    --walk-green:#2E8B4F;
+    --bus-red:#DC241F;
+    --train-orange:#F07D18;
+    --dlr-teal:#008E7D;
+    --tube-navy:#0019A8;
+    --gold:#F2B705;
+    --shadow: 0 8px 0 rgba(14,42,74,0.15);
+    --radius: 28px;
+    --focus: 4px solid #F2B705;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 15% 10%, var(--sky-deep) 0%, transparent 45%),
+      radial-gradient(circle at 85% 90%, var(--sky-deep) 0%, transparent 45%),
+      var(--sky);
+    font-family:'Atkinson Hyperlegible', Arial, sans-serif;
+    color:var(--navy);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,h2,h3, .display{
+    font-family:'Baloo 2', 'Atkinson Hyperlegible', sans-serif;
+    font-weight:800;
+    color:var(--navy);
+    margin:0;
+  }
+
+  button{ font-family:inherit; cursor:pointer; }
+  button:focus-visible, input:focus-visible{ outline:var(--focus); outline-offset:3px; }
+
+  .app{
+    max-width:1000px;
+    margin:0 auto;
+    padding:20px 20px 60px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* Top bar */
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:1.3rem;
+    font-weight:700;
+  }
+  .brand .emoji{ font-size:2rem; }
+
+  .icon-btn{
+    background:var(--white);
+    border:3px solid var(--navy);
+    border-radius:20px;
+    width:56px; height:56px;
+    font-size:1.6rem;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: var(--shadow);
+  }
+  .icon-btn:active{ transform:translateY(4px); box-shadow:none; }
+  .icon-btn[aria-pressed="false"] .on{ display:none; }
+  .icon-btn[aria-pressed="true"] .off{ display:none; }
+
+  /* Screens */
+  .screen{ display:none; flex:1; flex-direction:column; }
+  .screen.active{ display:flex; }
+
+  /* WELCOME SCREEN */
+  .welcome{
+    text-align:center;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:26px;
+    padding:20px 10px;
+  }
+  .welcome .hero-emoji{
+    font-size:5.5rem;
+    line-height:1;
+    animation: bob 3.5s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{ transform:translateY(0) rotate(-2deg); }
+    50%{ transform:translateY(-10px) rotate(2deg); }
+  }
+  .welcome h1{ font-size:2.6rem; max-width:600px; }
+  .welcome p.sub{ font-size:1.3rem; max-width:520px; margin:0 auto; }
+
+  .name-field{
+    display:flex; flex-direction:column; gap:8px; align-items:center;
+    width:100%; max-width:420px;
+  }
+  .name-field label{ font-size:1.2rem; font-weight:700; }
+  .name-field input{
+    width:100%;
+    font-size:1.5rem;
+    padding:16px 18px;
+    border-radius:18px;
+    border:3px solid var(--navy);
+    text-align:center;
+    background:var(--white);
+  }
+
+  .big-cta{
+    font-size:1.6rem;
+    font-weight:800;
+    font-family:'Baloo 2', sans-serif;
+    color:var(--white);
+    background:var(--navy-soft);
+    border:none;
+    border-radius:26px;
+    padding:22px 48px;
+    box-shadow: 0 8px 0 #08192e;
+    display:flex; align-items:center; gap:14px;
+  }
+  .big-cta:active{ transform:translateY(6px); box-shadow:0 2px 0 #08192e; }
+  .big-cta .emoji{ font-size:1.9rem; }
+
+  /* MAIN TRANSPORT SCREEN */
+  .prompt-bar{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  .prompt-bar h1{ font-size:2.1rem; }
+  .prompt-bar p{ font-size:1.15rem; margin-top:6px; }
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap:20px;
+    flex:1;
+  }
+
+  .tile{
+    position:relative;
+    border:none;
+    border-radius:var(--radius);
+    padding:26px 16px 22px;
+    min-height:190px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    color:var(--white);
+    box-shadow: var(--shadow);
+    transition: transform .12s ease;
+  }
+  .tile:active{ transform:translateY(6px); box-shadow:none; }
+  .tile .emoji{ font-size:3.6rem; filter: drop-shadow(0 3px 0 rgba(0,0,0,.15)); }
+  .tile .label{ font-family:'Baloo 2',sans-serif; font-weight:800; font-size:1.45rem; }
+  .tile .detail{ font-size:0.95rem; font-weight:700; opacity:.95; min-height:1.2em; }
+
+  .tile.walk{ background:var(--walk-green); }
+  .tile.bus{ background:var(--bus-red); }
+  .tile.train{ background:var(--train-orange); }
+  .tile.dlr{ background:var(--dlr-teal); }
+  .tile.tube{ background:var(--tube-navy); }
+
+  .check-badge{
+    position:absolute;
+    top:12px; right:12px;
+    width:44px; height:44px;
+    border-radius:50%;
+    background:var(--gold);
+    color:var(--navy);
+    display:none;
+    align-items:center; justify-content:center;
+    font-size:1.5rem;
+    font-weight:900;
+    border:3px solid var(--white);
+  }
+  .tile[aria-pressed="true"] .check-badge{ display:flex; }
+  .tile[aria-pressed="true"]{ outline:5px solid var(--gold); outline-offset:2px; }
+
+  .footer-actions{
+    margin-top:26px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .summary-btn{
+    font-size:1.5rem;
+    font-weight:800;
+    font-family:'Baloo 2',sans-serif;
+    color:var(--navy);
+    background:var(--gold);
+    border:none;
+    border-radius:26px;
+    padding:20px 46px;
+    box-shadow: 0 8px 0 #a97c00;
+    display:none;
+    align-items:center; gap:12px;
+  }
+  .summary-btn.show{ display:flex; }
+  .summary-btn:active{ transform:translateY(6px); box-shadow:0 2px 0 #a97c00; }
+
+  /* OVERLAY (Underground / Bus) */
+  .overlay{
+    position:fixed; inset:0;
+    background:rgba(14,42,74,.55);
+    display:none;
+    align-items:center; justify-content:center;
+    padding:16px;
+    z-index:50;
+  }
+  .overlay.active{ display:flex; }
+  .overlay-card{
+    background:var(--sky);
+    border-radius:32px;
+    max-width:760px;
+    width:100%;
+    max-height:88vh;
+    overflow-y:auto;
+    padding:28px 26px 26px;
+    box-shadow:0 12px 0 rgba(14,42,74,.2);
+  }
+  .overlay-card h2{ font-size:1.8rem; text-align:center; }
+  .overlay-card p.sub{ text-align:center; font-size:1.1rem; margin-top:6px; }
+
+  .lines-grid{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px,1fr));
+    gap:14px;
+    margin-top:22px;
+  }
+  .line-btn{
+    border:none;
+    border-radius:18px;
+    padding:16px 14px;
+    font-family:'Baloo 2',sans-serif;
+    font-weight:700;
+    font-size:1.1rem;
+    display:flex; align-items:center; gap:12px;
+    box-shadow: 0 5px 0 rgba(0,0,0,.2);
+    position:relative;
+  }
+  .line-btn .swatch{
+    width:26px; height:26px; border-radius:50%;
+    border:3px solid rgba(255,255,255,.85);
+    flex-shrink:0;
+  }
+  .line-btn .tick{ margin-left:auto; font-size:1.3rem; display:none; }
+  .line-btn[aria-pressed="true"] .tick{ display:inline; }
+  .line-btn[aria-pressed="true"]{ outline:4px solid var(--navy); }
+  .line-btn:active{ transform:translateY(4px); }
+
+  .keypad{
+    display:grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap:12px;
+    margin:22px 0;
+    max-width:340px;
+    margin-left:auto; margin-right:auto;
+  }
+  .key{
+    background:var(--white);
+    border:3px solid var(--navy);
+    border-radius:16px;
+    font-size:1.5rem;
+    font-weight:800;
+    padding:16px 0;
+    box-shadow: 0 5px 0 rgba(14,42,74,.2);
+  }
+  .key:active{ transform:translateY(4px); box-shadow:none; }
+
+  .bus-number-display{
+    text-align:center;
+    font-size:2.6rem;
+    font-weight:800;
+    font-family:'Baloo 2',sans-serif;
+    background:var(--white);
+    border:4px dashed var(--bus-red);
+    border-radius:20px;
+    padding:14px;
+    min-height:78px;
+    display:flex; align-items:center; justify-content:center;
+    color:var(--bus-red);
+    letter-spacing:4px;
+  }
+
+  .overlay-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    justify-content:center;
+    margin-top:20px;
+  }
+  .pill-btn{
+    font-family:'Baloo 2',sans-serif;
+    font-weight:800;
+    font-size:1.15rem;
+    border:none;
+    border-radius:20px;
+    padding:16px 26px;
+    box-shadow: 0 5px 0 rgba(0,0,0,.2);
+  }
+  .pill-btn:active{ transform:translateY(4px); box-shadow:none; }
+  .pill-btn.primary{ background:var(--navy-soft); color:var(--white); }
+  .pill-btn.ghost{ background:var(--white); color:var(--navy); border:3px solid var(--navy); box-shadow:0 5px 0 rgba(14,42,74,.15); }
+
+  /* SUMMARY SCREEN */
+  .summary{
+    text-align:center;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+    padding-top:10px;
+  }
+  .summary .hero-emoji{ font-size:4.5rem; }
+  .summary h1{ font-size:2.3rem; }
+  .summary-list{
+    list-style:none;
+    padding:0; margin:0;
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    justify-content:center;
+    max-width:700px;
+  }
+  .summary-chip{
+    background:var(--white);
+    border-radius:22px;
+    padding:16px 22px;
+    display:flex;
+    align-items:center;
+    gap:12px;
+    font-size:1.25rem;
+    font-weight:700;
+    box-shadow: var(--shadow);
+    border:3px solid var(--navy);
+  }
+  .summary-chip .emoji{ font-size:2rem; }
+
+  .empty-note{
+    font-size:1.2rem;
+    background:var(--white);
+    border-radius:20px;
+    padding:20px 24px;
+    border:3px dashed var(--navy);
+  }
+
+  .summary-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:16px;
+    justify-content:center;
+    margin-top:8px;
+  }
+
+  .screenshot-note{
+    font-size:1.05rem;
+    max-width:480px;
+    background:var(--white);
+    border-radius:18px;
+    padding:14px 18px;
+    border:3px solid var(--gold);
+  }
+
+  /* Confetti canvas */
+  #confetti-canvas{
+    position:fixed; inset:0;
+    pointer-events:none;
+    z-index:80;
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .welcome .hero-emoji{ animation:none; }
+    *{ transition:none !important; }
+  }
+
+  @media (max-width:480px){
+    .welcome h1{ font-size:2rem; }
+    .prompt-bar h1{ font-size:1.7rem; }
+    .tile .emoji{ font-size:3rem; }
+    .big-cta{ padding:18px 32px; font-size:1.35rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand"><span class="emoji">🚏</span><span>Local Offer: Our Day Trip</span></div>
+    <button class="icon-btn" id="soundToggle" aria-pressed="false" aria-label="Turn sound on or off">
+      <span class="off">🔇</span><span class="on">🔊</span>
+    </button>
+  </div>
+
+  <!-- SCREEN 1: WELCOME -->
+  <section class="screen active" id="screen-welcome">
+    <div class="welcome">
+      <div class="hero-emoji" aria-hidden="true">🚌🚇🚶</div>
+      <h1>How did we travel today?</h1>
+      <p class="sub">Tap each way we travelled on our trip. Let's find out together!</p>
+      <div class="name-field">
+        <label for="studentName">My name is:</label>
+        <input type="text" id="studentName" placeholder="Type your name (optional)" autocomplete="off">
+      </div>
+      <button class="big-cta" id="startBtn"><span class="emoji">▶️</span> Start</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: TRANSPORT CHOICES -->
+  <section class="screen" id="screen-choices">
+    <div class="prompt-bar">
+      <h1>Tap every way we travelled</h1>
+      <p>You can choose more than one!</p>
+    </div>
+
+    <div class="grid">
+      <button class="tile walk" id="tile-walk" aria-pressed="false">
+        <span class="check-badge">✓</span>
+        <span class="emoji" aria-hidden="true">🚶</span>
+        <span class="label">Walk</span>
+        <span class="detail">&nbsp;</span>
+      </button>
+
+      <button class="tile bus" id="tile-bus" aria-pressed="false">
+        <span class="check-badge">✓</span>
+        <span class="emoji" aria-hidden="true">🚌</span>
+        <span class="label">Bus</span>
+        <span class="detail" id="busDetail">&nbsp;</span>
+      </button>
+
+      <button class="tile train" id="tile-train" aria-pressed="false">
+        <span class="check-badge">✓</span>
+        <span class="emoji" aria-hidden="true">🚆</span>
+        <span class="label">Train</span>
+        <span class="detail">&nbsp;</span>
+      </button>
+
+      <button class="tile dlr" id="tile-dlr" aria-pressed="false">
+        <span class="check-badge">✓</span>
+        <span class="emoji" aria-hidden="true">🚈</span>
+        <span class="label">DLR</span>
+        <span class="detail">&nbsp;</span>
+      </button>
+
+      <button class="tile tube" id="tile-tube" aria-pressed="false">
+        <span class="check-badge">✓</span>
+        <span class="emoji" aria-hidden="true">🚇</span>
+        <span class="label">Underground</span>
+        <span class="detail" id="tubeDetail">&nbsp;</span>
+      </button>
+    </div>
+
+    <div class="footer-actions">
+      <button class="summary-btn" id="toSummaryBtn"><span>🏁</span> Show my summary</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: SUMMARY -->
+  <section class="screen" id="screen-summary">
+    <div class="summary">
+      <div class="hero-emoji" aria-hidden="true">🎉</div>
+      <h1 id="summaryHeading">Great job today!</h1>
+      <ul class="summary-list" id="summaryList"></ul>
+      <p class="empty-note" id="emptyNote" style="display:none;">We haven't picked any transport yet. Go back and tap what we used!</p>
+
+      <p class="screenshot-note">📸 Tip: take a screenshot now to keep a picture of your work, or download a PDF below!</p>
+
+      <div class="summary-actions">
+        <button class="pill-btn primary" id="downloadPdfBtn">⬇️ Download PDF</button>
+        <button class="pill-btn ghost" id="backToChoicesBtn">⬅️ Back</button>
+        <button class="pill-btn ghost" id="restartBtn">🔄 Start again</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<!-- UNDERGROUND OVERLAY -->
+<div class="overlay" id="tubeOverlay" role="dialog" aria-modal="true" aria-labelledby="tubeOverlayTitle">
+  <div class="overlay-card">
+    <h2 id="tubeOverlayTitle">🚇 Which line(s) did we use?</h2>
+    <p class="sub">Tap the line. Tap again to remove it.</p>
+    <div class="lines-grid" id="linesGrid"></div>
+    <div class="overlay-actions">
+      <button class="pill-btn ghost" id="tubeSkipBtn">Not sure / skip</button>
+      <button class="pill-btn primary" id="tubeDoneBtn">✓ Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- BUS NUMBER OVERLAY -->
+<div class="overlay" id="busOverlay" role="dialog" aria-modal="true" aria-labelledby="busOverlayTitle">
+  <div class="overlay-card">
+    <h2 id="busOverlayTitle">🚌 Do you know the bus number?</h2>
+    <p class="sub">Type it in, or skip if you're not sure.</p>
+    <div class="bus-number-display" id="busNumberDisplay" aria-live="polite">&nbsp;</div>
+    <div class="keypad" id="busKeypad"></div>
+    <div class="overlay-actions">
+      <button class="pill-btn ghost" id="busClearBtn">⌫ Clear</button>
+      <button class="pill-btn ghost" id="busSkipBtn">Not sure / skip</button>
+      <button class="pill-btn primary" id="busDoneBtn">✓ Done</button>
+    </div>
+  </div>
+</div>
+
+<div class="sr-only" aria-live="polite" id="liveRegion"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- STATE ---------- */
+  const state = {
+    walk:false,
+    train:false,
+    dlr:false,
+    bus:{ used:false, number:"" },
+    tube:{ used:false, lines:[] }
+  };
+
+  const TUBE_LINES = [
+    {name:"Bakerloo", color:"#B36305"},
+    {name:"Central", color:"#E32017"},
+    {name:"Circle", color:"#FFD300"},
+    {name:"District", color:"#00782A"},
+    {name:"Hammersmith & City", color:"#F3A9BB"},
+    {name:"Jubilee", color:"#A0A5A9"},
+    {name:"Metropolitan", color:"#9B0056"},
+    {name:"Northern", color:"#000000"},
+    {name:"Piccadilly", color:"#003688"},
+    {name:"Victoria", color:"#0098D4"},
+    {name:"Elizabeth line", color:"#6950A1"},
+    {name:"Waterloo & City", color:"#95CDBA"}
+  ];
+
+  let soundOn = false;
+
+  /* ---------- HELPERS ---------- */
+  function $(id){ return document.getElementById(id); }
+  function announce(msg){ $("liveRegion").textContent = msg; }
+
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    $(id).classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  function openOverlay(id){ $(id).classList.add("active"); }
+  function closeOverlay(id){ $(id).classList.remove("active"); }
+
+  /* ---------- SOUND ---------- */
+  let audioCtx;
+  function chime(success){
+    if(!soundOn) return;
+    try{
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      const freqs = success ? [523.25, 659.25, 783.99] : [392];
+      freqs.forEach((f,i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0, now + i*0.09);
+        gain.gain.linearRampToValueAtTime(0.15, now + i*0.09 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.09 + 0.35);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + i*0.09);
+        osc.stop(now + i*0.09 + 0.4);
+      });
+    }catch(e){ /* audio not available, ignore quietly */ }
+  }
+
+  $("soundToggle").addEventListener("click", function(){
+    soundOn = !soundOn;
+    this.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    if(soundOn) chime(true);
+  });
+
+  /* ---------- CONFETTI ---------- */
+  const canvas = $("confetti-canvas");
+  const ctx = canvas.getContext("2d");
+  function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  let particles = [];
+  const COLORS = ["#F2B705","#DC241F","#2E8B4F","#0019A8","#F07D18","#008E7D"];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function burstConfetti(x, y, count){
+    if(reduceMotion) return;
+    count = count || 26;
+    for(let i=0;i<count;i++){
+      particles.push({
+        x: x, y: y,
+        vx: (Math.random()-0.5) * 6,
+        vy: -(Math.random()*6 + 3),
+        size: Math.random()*7 + 5,
+        color: COLORS[Math.floor(Math.random()*COLORS.length)],
+        rot: Math.random()*360,
+        vr: (Math.random()-0.5) * 10,
+        life: 0
+      });
+    }
+    if(particles.length && !confettiRunning){ confettiRunning = true; requestAnimationFrame(tickConfetti); }
+  }
+
+  let confettiRunning = false;
+  function tickConfetti(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.vy += 0.18;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life += 1;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot * Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size/2, -p.size/2, p.size, p.size*0.6);
+      ctx.restore();
+    });
+    particles = particles.filter(p => p.y < canvas.height + 40 && p.life < 220);
+    if(particles.length){
+      requestAnimationFrame(tickConfetti);
+    } else {
+      confettiRunning = false;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+
+  function burstFromElement(el){
+    const r = el.getBoundingClientRect();
+    burstConfetti(r.left + r.width/2, r.top + r.height/2, 30);
+  }
+
+  /* ---------- WELCOME -> CHOICES ---------- */
+  $("startBtn").addEventListener("click", function(){
+    chime(true);
+    showScreen("screen-choices");
+  });
+
+  /* ---------- SIMPLE TILES: WALK / TRAIN / DLR ---------- */
+  function wireSimpleTile(id, key){
+    const tile = $(id);
+    tile.addEventListener("click", function(){
+      state[key] = !state[key];
+      tile.setAttribute("aria-pressed", state[key] ? "true":"false");
+      if(state[key]){
+        chime(true);
+        burstFromElement(tile);
+        announce(tile.querySelector(".label").textContent + " selected");
+      } else {
+        chime(false);
+        announce(tile.querySelector(".label").textContent + " removed");
+      }
+      refreshSummaryButton();
+    });
+  }
+  wireSimpleTile("tile-walk", "walk");
+  wireSimpleTile("tile-train", "train");
+  wireSimpleTile("tile-dlr", "dlr");
+
+  /* ---------- UNDERGROUND TILE + OVERLAY ---------- */
+  const linesGrid = $("linesGrid");
+  TUBE_LINES.forEach(line => {
+    const btn = document.createElement("button");
+    btn.className = "line-btn";
+    btn.type = "button";
+    btn.setAttribute("aria-pressed","false");
+    btn.style.background = "#FFFFFF";
+    btn.style.color = "#0E2A4A";
+    btn.innerHTML = `<span class="swatch" style="background:${line.color}"></span><span>${line.name}</span><span class="tick">✓</span>`;
+    btn.addEventListener("click", function(){
+      const idx = state.tube.lines.indexOf(line.name);
+      if(idx === -1){
+        state.tube.lines.push(line.name);
+        btn.setAttribute("aria-pressed","true");
+        chime(true);
+      } else {
+        state.tube.lines.splice(idx,1);
+        btn.setAttribute("aria-pressed","false");
+        chime(false);
+      }
+    });
+    linesGrid.appendChild(btn);
+  });
+
+  $("tile-tube").addEventListener("click", function(){ openOverlay("tubeOverlay"); });
+
+  function finishTube(usedFlag){
+    state.tube.used = usedFlag;
+    const tile = $("tile-tube");
+    const detail = $("tubeDetail");
+    tile.setAttribute("aria-pressed", usedFlag ? "true":"false");
+    if(usedFlag){
+      detail.textContent = state.tube.lines.length ? state.tube.lines.join(", ") : "Underground";
+      burstFromElement(tile);
+    } else {
+      detail.innerHTML = "&nbsp;";
+    }
+    closeOverlay("tubeOverlay");
+    refreshSummaryButton();
+  }
+
+  $("tubeDoneBtn").addEventListener("click", function(){
+    finishTube(state.tube.lines.length > 0 ? true : true); // marking underground used once confirmed
+  });
+  $("tubeSkipBtn").addEventListener("click", function(){
+    state.tube.lines = [];
+    linesGrid.querySelectorAll(".line-btn").forEach(b => b.setAttribute("aria-pressed","false"));
+    finishTube(true);
+  });
+
+  /* ---------- BUS TILE + OVERLAY ---------- */
+  const busDisplay = $("busNumberDisplay");
+  const busKeypad = $("busKeypad");
+  ["1","2","3","4","5","6","7","8","9","⌫","0","OK"].forEach(k => {
+    const btn = document.createElement("button");
+    btn.className = "key";
+    btn.type = "button";
+    btn.textContent = k;
+    btn.addEventListener("click", function(){
+      if(k === "⌫"){
+        state.bus.number = state.bus.number.slice(0,-1);
+      } else if(k === "OK"){
+        finishBus(true);
+        return;
+      } else if(state.bus.number.length < 4){
+        state.bus.number += k;
+      }
+      updateBusDisplay();
+    });
+    busKeypad.appendChild(btn);
+  });
+
+  function updateBusDisplay(){
+    busDisplay.textContent = state.bus.number.length ? state.bus.number : "";
+    if(!state.bus.number.length) busDisplay.innerHTML = "&nbsp;";
+  }
+
+  $("tile-bus").addEventListener("click", function(){ openOverlay("busOverlay"); });
+  $("busClearBtn").addEventListener("click", function(){ state.bus.number = ""; updateBusDisplay(); });
+
+  function finishBus(usedFlag){
+    state.bus.used = usedFlag;
+    const tile = $("tile-bus");
+    const detail = $("busDetail");
+    tile.setAttribute("aria-pressed", usedFlag ? "true":"false");
+    if(usedFlag){
+      detail.textContent = state.bus.number ? ("Number " + state.bus.number) : "Bus";
+      chime(true);
+      burstFromElement(tile);
+    } else {
+      detail.innerHTML = "&nbsp;";
+    }
+    closeOverlay("busOverlay");
+    refreshSummaryButton();
+  }
+
+  $("busDoneBtn").addEventListener("click", function(){ finishBus(true); });
+  $("busSkipBtn").addEventListener("click", function(){ state.bus.number = ""; updateBusDisplay(); finishBus(true); });
+
+  /* ---------- SUMMARY BUTTON VISIBILITY ---------- */
+  function anySelected(){
+    return state.walk || state.train || state.dlr || state.bus.used || state.tube.used;
+  }
+  function refreshSummaryButton(){
+    $("toSummaryBtn").classList.toggle("show", anySelected());
+  }
+
+  /* ---------- SUMMARY SCREEN ---------- */
+  $("toSummaryBtn").addEventListener("click", function(){
+    buildSummary();
+    showScreen("screen-summary");
+    setTimeout(()=> burstConfetti(window.innerWidth/2, window.innerHeight*0.25, 60), 150);
+    chime(true);
+  });
+  $("backToChoicesBtn").addEventListener("click", function(){ showScreen("screen-choices"); });
+
+  function buildSummary(){
+    const list = $("summaryList");
+    list.innerHTML = "";
+    const items = [];
+    if(state.walk) items.push({emoji:"🚶", text:"Walk"});
+    if(state.bus.used) items.push({emoji:"🚌", text: state.bus.number ? ("Bus " + state.bus.number) : "Bus"});
+    if(state.train) items.push({emoji:"🚆", text:"Train"});
+    if(state.dlr) items.push({emoji:"🚈", text:"DLR"});
+    if(state.tube.used) items.push({emoji:"🚇", text: state.tube.lines.length ? ("Underground: " + state.tube.lines.join(", ")) : "Underground"});
+
+    $("emptyNote").style.display = items.length ? "none" : "block";
+    $("summaryHeading").textContent = items.length ? "Great job today!" : "Let's pick our transport";
+
+    items.forEach(it => {
+      const li = document.createElement("li");
+      li.className = "summary-chip";
+      li.innerHTML = `<span class="emoji" aria-hidden="true">${it.emoji}</span><span>${it.text}</span>`;
+      list.appendChild(li);
+    });
+  }
+
+  /* ---------- RESTART ---------- */
+  $("restartBtn").addEventListener("click", function(){
+    state.walk = false; state.train = false; state.dlr = false;
+    state.bus = {used:false, number:""};
+    state.tube = {used:false, lines:[]};
+    document.querySelectorAll(".tile").forEach(t => t.setAttribute("aria-pressed","false"));
+    linesGrid.querySelectorAll(".line-btn").forEach(b => b.setAttribute("aria-pressed","false"));
+    $("busDetail").innerHTML = "&nbsp;";
+    $("tubeDetail").innerHTML = "&nbsp;";
+    updateBusDisplay();
+    refreshSummaryButton();
+    $("studentName").value = "";
+    showScreen("screen-welcome");
+  });
+
+  /* ---------- PDF DOWNLOAD ---------- */
+  $("downloadPdfBtn").addEventListener("click", function(){
+    try{
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({unit:"pt", format:"a4"});
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const name = $("studentName").value.trim();
+      const dateStr = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+
+      doc.setFillColor(14,42,74);
+      doc.rect(0,0,pageWidth,90,"F");
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(24);
+      doc.text("Our Day Trip - Transport Summary", pageWidth/2, 40, {align:"center"});
+      doc.setFontSize(12);
+      doc.text("Local Offer Session - Phoenix College", pageWidth/2, 62, {align:"center"});
+
+      doc.setTextColor(14,42,74);
+      let y = 130;
+      doc.setFontSize(14);
+      doc.text("Name: " + (name || "________________________"), 60, y);
+      y += 24;
+      doc.text("Date: " + dateStr, 60, y);
+      y += 40;
+
+      doc.setFontSize(16);
+      doc.text("How we travelled today:", 60, y);
+      y += 30;
+
+      const items = [];
+      if(state.walk) items.push("Walk");
+      if(state.bus.used) items.push(state.bus.number ? ("Bus (number " + state.bus.number + ")") : "Bus");
+      if(state.train) items.push("Train");
+      if(state.dlr) items.push("DLR");
+      if(state.tube.used) items.push(state.tube.lines.length ? ("Underground - " + state.tube.lines.join(", ")) : "Underground");
+
+      doc.setFontSize(14);
+      if(items.length === 0){
+        doc.text("No transport selected yet.", 70, y);
+      } else {
+        items.forEach(text => {
+          doc.setFillColor(242,183,5);
+          doc.circle(66, y-4, 4, "F");
+          doc.text(text, 80, y);
+          y += 26;
+        });
+      }
+
+      y += 20;
+      doc.setDrawColor(14,42,74);
+      doc.line(60, y, pageWidth-60, y);
+      y += 30;
+      doc.setFontSize(11);
+      doc.setTextColor(90,90,90);
+      doc.text("Great work exploring how to get around London safely and independently!", 60, y);
+
+      doc.save((name ? name.replace(/\s+/g,"_") : "day_trip") + "_transport_summary.pdf");
+      chime(true);
+    }catch(e){
+      alert("Sorry, the PDF could not be created. Please try the screenshot option instead.");
+    }
+  });
+
+  /* init */
+  updateBusDisplay();
+  refreshSummaryButton();
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accessible Student Timetable with Notes</title>
+    <style>
+        :root {
+            --bg-color: #f5f7fa;
+            --card-bg: #ffffff;
+            --text-color: #2c3e50;
+            --border-color: #cbd5e1;
+            --selection-color: #3498db;
+            
+            /* High-contrast, mature accessible category colors */
+            --vocational-bg: #e0e7ff;   --vocational-border: #4f46e5;
+            --practical-bg: #ccfbf1;    --practical-border: #0d9488;
+            --social-bg: #fef9c3;       --social-border: #ca8a04;
+            --creative-bg: #fce7f3;     --creative-border: #db2777;
+            --physical-bg: #dbeafe;     --physical-border: #2563eb;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            line-height: 1.4;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        /* Top Header Area */
+        header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid #e2e8f0;
+        }
+
+        .student-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .student-box label {
+            font-weight: 700;
+            font-size: 1.3rem;
+        }
+
+        .student-box input {
+            border: 2px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 1.2rem;
+            width: 100%;
+            max-width: 350px;
+            outline: none;
+        }
+
+        .student-box input:focus {
+            border-color: var(--selection-color);
+        }
+
+        .top-buttons {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        #btnVoice { background-color: #6366f1; color: white; }
+        #btnVoice.muted { background-color: #64748b; }
+        .btn-pdf { background-color: #10b981; color: white; }
+        .btn-reset { background-color: #ef4444; color: white; }
+
+        .banner-tip {
+            background-color: #fef08a;
+            border-left: 6px solid #eab308;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            font-size: 1.05rem;
+        }
+
+        /* Table Architecture */
+        .table-scroll {
+            width: 100%;
+            overflow-x: auto;
+            margin-bottom: 35px;
+            border-radius: 12px;
+            border: 2px solid #e2e8f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1100px;
+            background: #ffffff;
+        }
+
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: center;
+            vertical-align: middle;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            font-weight: 700;
+            font-size: 1.1rem;
+            height: 55px;
+        }
+
+        .row-header {
+            background-color: #f8fafc;
+            font-weight: 700;
+            font-size: 1.2rem;
+            width: 140px;
+            text-align: left;
+            padding-left: 15px;
+            border-right: 3px solid #cbd5e1;
+        }
+
+        /* Interactive Timetable Grid Cells */
+        .slot {
+            min-height: 160px;
+            height: 100%;
+            background-color: #ffffff;
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 8px 8px 8px;
+            transition: all 0.15s ease;
+        }
+
+        .slot:hover {
+            background-color: #f8fafc;
+            border-color: #94a3b8;
+        }
+
+        /* Cell highlighting when an activity is chosen */
+        .slot.ready-to-drop {
+            border: 2px dashed var(--selection-color);
+            background-color: #eff6ff;
+            animation: gentle-glow 2s infinite;
+        }
+
+        .slot.filled {
+            border-style: solid;
+            border-width: 3px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+        }
+
+        /* Custom Optional Text Note Inputs inside columns */
+        .slot-note-input {
+            width: 100%;
+            margin-top: auto;
+            border: 1px solid rgba(0,0,0,0.15);
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 0.85rem;
+            text-align: center;
+            background: rgba(255,255,255,0.8);
+            color: #2c3e50;
+            outline: none;
+            font-weight: 500;
+        }
+        
+        .slot-note-input::placeholder {
+            color: #94a3b8;
+            font-weight: 400;
+        }
+
+        .slot-note-input:focus {
+            border-color: var(--selection-color);
+            background: #ffffff;
+        }
+
+        /* Delete Button inside Cells */
+        .delete-btn {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 24px;
+            height: 24px;
+            background-color: rgba(15, 23, 42, 0.6);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            z-index: 10;
+        }
+        .delete-btn:hover {
+            background-color: #ef4444;
+        }
+
+        /* Activity Bank Frame */
+        .bank-section {
+            border-top: 3px solid #e2e8f0;
+            padding-top: 25px;
+        }
+
+        .bank-header {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 15px;
+        }
+
+        .bank-instruction {
+            font-size: 1rem;
+            color: #64748b;
+            font-weight: 400;
+            margin-top: 4px;
+        }
+
+        .filter-container {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .filter-pill {
+            padding: 10px 18px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            border: 2px solid #cbd5e1;
+            background-color: #ffffff;
+            color: var(--text-color);
+        }
+        .filter-pill.active[data-filter="all"] { background-color: #334155; color: white; border-color: #334155; }
+        .filter-pill.active[data-filter="vocational"] { background-color: var(--vocational-border); color: white; border-color: var(--vocational-border); }
+        .filter-pill.active[data-filter="practical"] { background-color: var(--practical-border); color: white; border-color: var(--practical-border); }
+        .filter-pill.active[data-filter="social"] { background-color: var(--social-border); color: white; border-color: var(--social-border); }
+        .filter-pill.active[data-filter="creative"] { background-color: var(--creative-border); color: white; border-color: var(--creative-border); }
+        .filter-pill.active[data-filter="physical"] { background-color: var(--physical-border); color: white; border-color: var(--physical-border); }
+
+        .items-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 14px;
+            max-height: 550px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        /* Modular Activity Block Cards */
+        .activity-card {
+            border-radius: 12px;
+            padding: 16px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 10px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            user-select: none;
+            border: 3px solid transparent;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+            height: 100%;
+            width: 100%;
+        }
+
+        .activity-card .symbol {
+            font-size: 2.6rem;
+            line-height: 1;
+            display: block;
+        }
+
+        /* Color Rendering Configurations */
+        .type-vocational { background-color: var(--vocational-bg); border-color: var(--vocational-bg); color: #1e1b4b; }
+        .type-practical { background-color: var(--practical-bg); border-color: var(--practical-bg); color: #042f2e; }
+        .type-social { background-color: var(--social-bg); border-color: var(--social-bg); color: #422006; }
+        .type-creative { background-color: var(--creative-bg); border-color: var(--creative-bg); color: #4d0728; }
+        .type-physical { background-color: var(--physical-bg); border-color: var(--physical-bg); color: #172554; }
+
+        /* Card Active Highlight State */
+        .activity-card.selected-active {
+            border-color: #0f172a !important;
+            box-shadow: 0 0 15px rgba(15, 23, 42, 0.4);
+            transform: scale(1.02);
+        }
+
+        @keyframes gentle-glow {
+            0% { box-shadow: 0 0 5px rgba(52, 152, 219, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(52, 152, 219, 0.6); }
+            100% { box-shadow: 0 0 5px rgba(52, 152, 219, 0.2); }
+        }
+
+        /* Printing Style Configurations */
+        @media print {
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            .top-buttons, .bank-section, .banner-tip, .delete-btn, .filter-container { display: none !important; }
+            .table-scroll { overflow: visible; border: none; }
+            table { min-width: 100%; }
+            th { background-color: #e2e8f0 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .row-header { background-color: #f1f5f9 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .slot { border: 1px solid #94a3b8; background: white !important; min-height: 120px; }
+            .slot-note-input { border: none !important; background: transparent !important; color: #000 !important; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="student-box">
+            <label for="studentName">Student Name:</label>
+            <input type="text" id="studentName" placeholder="Click to type name..." aria-label="Student Name">
+        </div>
+        <div class="top-buttons">
+            <button id="btnVoice" class="btn" onclick="toggleMuteState()">🔊 Voice: ON</button>
+            <button class="btn btn-pdf" onclick="window.print()">📄 Save as PDF</button>
+            <button class="btn btn-reset" onclick="resetWholeWeek()">🔄 Clear Timetable</button>
+        </div>
+    </header>
+
+    <div class="banner-tip">
+        📸 <strong>Tip for Note Typing:</strong> Tap the white bar at the bottom of any scheduled item to type custom details, times, or reminders!
+    </div>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th onclick="speakText('Monday')">Monday</th>
+                    <th onclick="speakText('Tuesday')">Tuesday</th>
+                    <th onclick="speakText('Wednesday')">Wednesday</th>
+                    <th onclick="speakText('Thursday')">Thursday</th>
+                    <th onclick="speakText('Friday')">Friday</th>
+                    <th onclick="speakText('Saturday')">Saturday</th>
+                    <th onclick="speakText('Sunday')">Sunday</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="row-header" onclick="speakText('Morning')">☀️ Morning</td>
+                    <td><div class="slot" data-day="Mon" data-time="Morning"></div></td>
+                    <td><div class="slot" data-day="Tue" data-time="Morning"></div></td>
+                    <td><div class="slot" data-day="Wed" data-time="Morning"></div></td>
+                    <td><div class="slot" data-day="Thu" data-time="Morning"></div></td>
+                    <td><div class="slot" data-day="Fri" data-time="Morning"></div></td>
+                    <td><div class="slot" data-day="Sat" data-time="Morning"></div></td>
+                    <td><div class="slot" data-day="Sun" data-time="Morning"></div></td>
+                </tr>
+                <tr>
+                    <td class="row-header" onclick="speakText('Afternoon')">🌤️ Afternoon</td>
+                    <td><div class="slot" data-day="Mon" data-time="Afternoon"></div></td>
+                    <td><div class="slot" data-day="Tue" data-time="Afternoon"></div></td>
+                    <td><div class="slot" data-day="Wed" data-time="Afternoon"></div></td>
+                    <td><div class="slot" data-day="Thu" data-time="Afternoon"></div></td>
+                    <td><div class="slot" data-day="Fri" data-time="Afternoon"></div></td>
+                    <td><div class="slot" data-day="Sat" data-time="Afternoon"></div></td>
+                    <td><div class="slot" data-day="Sun" data-time="Afternoon"></div></td>
+                </tr>
+                <tr>
+                    <td class="row-header" onclick="speakText('Evening')">🌙 Evening</td>
+                    <td><div class="slot" data-day="Mon" data-time="Evening"></div></td>
+                    <td><div class="slot" data-day="Tue" data-time="Evening"></div></td>
+                    <td><div class="slot" data-day="Wed" data-time="Evening"></div></td>
+                    <td><div class="slot" data-day="Thu" data-time="Evening"></div></td>
+                    <td><div class="slot" data-day="Fri" data-time="Evening"></div></td>
+                    <td><div class="slot" data-day="Sat" data-time="Evening"></div></td>
+                    <td><div class="slot" data-day="Sun" data-time="Evening"></div></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <section class="bank-section">
+        <div class="bank-header">
+            Activity Choice Bank
+            <div class="bank-instruction">First, tap any activity card below. Then, tap an empty column box on the schedule grid above.</div>
+        </div>
+
+        <div class="filter-container">
+            <button class="filter-pill active" data-filter="all" onclick="applyFilter('all')">Show All</button>
+            <button class="filter-pill" data-filter="vocational" onclick="applyFilter('vocational')">💼 Jobs & Work</button>
+            <button class="filter-pill" data-filter="practical" onclick="applyFilter('practical')">🛠️ Independent Learning</button>
+            <button class="filter-pill" data-filter="social" onclick="applyFilter('social')">🛋️ Relax & Socialize</button>
+            <button class="filter-pill" data-filter="creative" onclick="applyFilter('creative')">🎨 Creative Arts</button>
+            <button class="filter-pill" data-filter="physical" onclick="applyFilter('physical')">👟 Exercise & Sports</button>
+        </div>
+
+        <div class="items-grid" id="bankGrid">
+            </div>
+    </section>
+</div>
+
+<script>
+    let isMuted = false;
+    let selectedActiveCard = null;
+
+    // Rich dataset featuring high volume items
+    const activityDataset = [
+        // VOCATIONAL & JOBS
+        { id: 'voc_1', label: 'Work Placement', icon: '💼', type: 'vocational' },
+        { id: 'voc_2', label: 'Office Skills', icon: '🖨️', type: 'vocational' },
+        { id: 'voc_3', label: 'Gardening Job', icon: '🌱', type: 'vocational' },
+        { id: 'voc_4', label: 'Café Work', icon: '☕', type: 'vocational' },
+        { id: 'voc_5', label: 'Library Work', icon: '📖', type: 'vocational' },
+        { id: 'voc_6', label: 'Stocking Shelves', icon: '📦', type: 'vocational' },
+        { id: 'voc_7', label: 'Shredding Filing', icon: '📂', type: 'vocational' },
+        { id: 'voc_8', label: 'Data Entry Work', icon: '💻', type: 'vocational' },
+        { id: 'voc_9', label: 'Retail Assistant', icon: '🏷️', type: 'vocational' },
+
+        // INDEPENDENT PRACTICAL LEARNING
+        { id: 'prac_1', label: 'Cooking Club', icon: '🍳', type: 'practical' },
+        { id: 'prac_2', label: 'Baking Class', icon: '🍞', type: 'practical' },
+        { id: 'prac_3', label: 'Shopping Trip', icon: '🛒', type: 'practical' },
+        { id: 'prac_4', label: 'Money Skills', icon: '🪙', type: 'practical' },
+        { id: 'prac_5', label: 'Travel Training', icon: '🚌', type: 'practical' },
+        { id: 'prac_6', label: 'Laundry Skills', icon: '🧺', type: 'practical' },
+        { id: 'prac_7', label: 'First Aid Skills', icon: '🩹', type: 'practical' },
+        { id: 'prac_8', label: 'Idea Store Class', icon: '📚', type: 'practical' },
+        { id: 'prac_9', label: 'Computer Training', icon: '🖥️', type: 'practical' },
+        { id: 'prac_10', label: 'Cleaning Practice', icon: '🧹', type: 'practical' },
+
+        // RELAX & SOCIALIZE
+        { id: 'soc_1', label: 'Chill Time', icon: '🛋️', type: 'social' },
+        { id: 'soc_2', label: 'Meet Friends', icon: '👥', type: 'social' },
+        { id: 'soc_3', label: 'Cinema Outing', icon: '🎬', type: 'social' },
+        { id: 'soc_4', label: 'Board Games', icon: '🎲', type: 'social' },
+        { id: 'soc_5', label: 'The Tab Centre', icon: '🏠', type: 'social' },
+        { id: 'soc_6', label: 'St Margaret\'s', icon: '🏡', type: 'social' },
+        { id: 'soc_7', label: 'Listen to Music', icon: '🎧', type: 'social' },
+        { id: 'soc_8', label: 'Sensory Space', icon: '✨', type: 'social' },
+        { id: 'soc_9', label: 'Pub Dinner Out', icon: '🍔', type: 'social' },
+        { id: 'soc_10', label: 'Audio Book Time', icon: '📻', type: 'social' },
+
+        // CREATIVE ARTS
+        { id: 'cre_1', label: 'Rainbow Art Club', icon: '🌈', type: 'creative' },
+        { id: 'cre_2', label: 'Jewellery Making', icon: '📿', type: 'creative' },
+        { id: 'cre_3', label: 'Drama Group', icon: '🎭', type: 'creative' },
+        { id: 'cre_4', label: 'Sound Box Music', icon: '🔊', type: 'creative' },
+        { id: 'cre_5', label: 'Blink Dance Theatre', icon: '💃', type: 'creative' },
+        { id: 'cre_6', label: 'V & A Museum', icon: '🏛️', type: 'creative' },
+        { id: 'cre_7', label: 'Whitechapel Gallery', icon: '🖼️', type: 'creative' },
+        { id: 'cre_8', label: 'Clay Crafting', icon: '🏺', type: 'creative' },
+        { id: 'cre_9', label: 'Woodworking', icon: '🪚', type: 'creative' },
+        { id: 'cre_10', label: 'Photography', icon: '📷', type: 'creative' },
+
+        // PHYSICAL SPORTS
+        { id: 'phy_1', label: 'Swimming Laps', icon: '🏊', type: 'physical' },
+        { id: 'phy_2', label: 'Poplar Baths Gym', icon: '🏊‍♂️', type: 'physical' },
+        { id: 'phy_3', label: 'Ability Bow Gym', icon: '🏋️', type: 'physical' },
+        { id: 'phy_4', label: 'Bikeworks Cycling', icon: '🚲', type: 'physical' },
+        { id: 'phy_5', label: 'Athletics Tracks', icon: '🏃', type: 'physical' },
+        { id: 'phy_6', label: 'Tennis Match', icon: '🎾', type: 'physical' },
+        { id: 'phy_7', label: 'Outdoor Gym Workout', icon: '💪', type: 'physical' },
+        { id: 'phy_8', label: 'Victoria Park Walk', icon: '🌳', type: 'physical' },
+        { id: 'phy_9', label: 'Football Game', icon: '⚽', type: 'physical' },
+        { id: 'phy_10', label: 'Bowling Alley', icon: '🎳', type: 'physical' }
+    ];
+
+    function speakText(phrase) {
+        if (isMuted || !('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const speechLine = new SpeechSynthesisUtterance(phrase);
+        speechLine.rate = 0.85;
+        window.speechSynthesis.speak(speechLine);
+    }
+
+    function toggleMuteState() {
+        isMuted = !isMuted;
+        const btn = document.getElementById('btnVoice');
+        if (isMuted) {
+            btn.textContent = "🔇 Voice: OFF";
+            btn.classList.add('muted');
+        } else {
+            btn.textContent = "🔊 Voice: ON";
+            btn.classList.remove('muted');
+            speakText("Voice turned on");
+        }
+    }
+
+    function renderChoiceBank() {
+        const bankGrid = document.getElementById('bankGrid');
+        bankGrid.innerHTML = '';
+
+        activityDataset.forEach(item => {
+            const wrap = document.createElement('div');
+            const card = document.createElement('div');
+            card.className = `activity-card type-${item.type}`;
+            card.innerHTML = `<span class="symbol">${item.icon}</span><span>${item.label}</span>`;
+            
+            card.addEventListener('click', function(e) {
+                e.stopPropagation();
+                handleCardClick(card, item);
+            });
+
+            wrap.appendChild(card);
+            bankGrid.appendChild(wrap);
+        });
+    }
+
+    function handleCardClick(element, itemData) {
+        if (element.classList.contains('selected-active')) {
+            clearSelectionCycle();
+            speakText("Deselected");
+            return;
+        }
+        clearSelectionCycle();
+        selectedActiveCard = itemData;
+        element.classList.add('selected-active');
+        speakText(`Selected ${itemData.label}. Now tap a box on the schedule layout.`);
+
+        document.querySelectorAll('.slot').forEach(box => {
+            if (!box.classList.contains('filled')) {
+                box.classList.add('ready-to-drop');
+            }
+        });
+    }
+
+    function linkTimetableCells() {
+        document.querySelectorAll('.slot').forEach(cell => {
+            wipeTargetCell(cell);
+
+            cell.addEventListener('click', function(e) {
+                // Safeguard input fields from triggering card drop events or voice logs
+                if (e.target.classList.contains('slot-note-input')) {
+                    e.stopPropagation();
+                    return;
+                }
+
+                if (e.target.classList.contains('delete-btn')) {
+                    e.stopPropagation();
+                    wipeTargetCell(cell);
+                    return;
+                }
+
+                if (selectedActiveCard) {
+                    fillTargetCell(cell, selectedActiveCard);
+                } else {
+                    if (cell.classList.contains('filled')) {
+                        const writtenNote = cell.querySelector('.slot-note-input').value;
+                        const noteSpeech = writtenNote ? `, note details say: ${writtenNote}` : '';
+                        speakText(`${cell.dataset.day} ${cell.dataset.time} is ${cell.dataset.text}${noteSpeech}`);
+                    } else {
+                        speakText(`${cell.dataset.day} ${cell.dataset.time} is empty`);
+                    }
+                }
+            });
+        });
+    }
+
+    function fillTargetCell(cell, data) {
+        // Save text inside input if cell is overwritten instead of deleted
+        const existingNote = cell.querySelector('.slot-note-input') ? cell.querySelector('.slot-note-input').value : '';
+        
+        wipeTargetCell(cell);
+
+        cell.classList.add('filled', `type-${data.type}`);
+        cell.dataset.text = data.label;
+        cell.dataset.styleType = data.type;
+
+        cell.innerHTML = `
+            <button class="delete-btn">×</button>
+            <span class="symbol" style="font-size:2.4rem; line-height:1; pointer-events:none;">${data.icon}</span>
+            <span style="font-weight:700; font-size:0.95rem; margin-top:4px; pointer-events:none;">${data.label}</span>
+            <input type="text" class="slot-note-input" placeholder="Add note..." aria-label="Custom details">
+        `;
+
+        // Restore input note string value safely
+        if (existingNote) {
+            cell.querySelector('.slot-note-input').value = existingNote;
+        }
+
+        speakText(`Added ${data.label} to ${cell.dataset.day} ${cell.dataset.time}`);
+        clearSelectionCycle();
+    }
+
+    function wipeTargetCell(cell) {
+        if (cell.dataset.styleType) {
+            cell.classList.remove(`type-${cell.dataset.styleType}`);
+        }
+        cell.classList.remove('filled');
+        
+        delete cell.dataset.text;
+        delete cell.dataset.styleType;
+        
+        cell.innerHTML = `
+            <input type="text" class="slot-note-input" placeholder="Empty column note..." aria-label="Custom details">
+        `;
+    }
+
+    function clearSelectionCycle() {
+        selectedActiveCard = null;
+        document.querySelectorAll('.activity-card').forEach(c => c.classList.remove('selected-active'));
+        document.querySelectorAll('.slot').forEach(s => s.classList.remove('ready-to-drop'));
+    }
+
+    function resetWholeWeek() {
+        document.querySelectorAll('.slot').forEach(cell => wipeTargetCell(cell));
+        clearSelectionCycle();
+        speakText("Timetable cleared");
+    }
+
+    function applyFilter(category) {
+        document.querySelectorAll('.filter-pill').forEach(pill => {
+            pill.classList.toggle('active', pill.dataset.filter === category);
+        });
+
+        document.querySelectorAll('.items-grid .activity-card').forEach(card => {
+            const parent = card.parentElement;
+            if (category === 'all' || card.classList.contains(`type-${category}`)) {
+                parent.style.display = 'block';
+            } else {
+                parent.style.display = 'none';
+            }
+        });
+        speakText(`Showing ${category}`);
+    }
+
+    renderChoiceBank();
+    linkTimetableCells();
+</script>
+</body>
+</html>

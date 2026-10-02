@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frank's Class – My Community</title>
+<style>
+*{box-sizing:border-box} body{margin:0;font-family:Arial,sans-serif;background:#f3f7fb;color:#17202a}
+header{background:#17324d;color:white;padding:18px;text-align:center} h1{font-size:clamp(30px,5vw,54px);margin:0} 
+#progress{font-size:22px;margin-top:8px}.screen{display:none;max-width:1100px;margin:auto;padding:24px}.screen.active{display:block}
+h2{text-align:center;font-size:clamp(28px,4vw,46px);margin:10px 0 20px}.instructions{text-align:center;font-size:24px;margin:10px auto 25px;max-width:850px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:18px}
+.card,button{border:4px solid #263746;border-radius:22px;background:white;min-height:150px;padding:18px;font-size:25px;font-weight:bold;cursor:pointer;box-shadow:0 4px 0 #aeb9c4}
+.card:hover,button:hover{transform:translateY(-2px)} .icon{font-size:70px;display:block;margin-bottom:8px}.label{display:block}
+.feedback{text-align:center;font-size:30px;font-weight:bold;min-height:45px;margin:18px}.good{color:#167447}.try{color:#a34b00}
+.nav{display:flex;gap:15px;justify-content:center;flex-wrap:wrap;margin-top:22px}.nav button{min-height:70px;padding:12px 28px}
+.big{font-size:32px;min-height:110px}.selected{outline:7px solid #f2c94c}
+.score{text-align:center;font-size:24px;font-weight:bold}
+#celebration{font-size:90px;text-align:center}
+.small{font-size:18px;text-align:center;margin-top:10px}
+</style>
+</head>
+<body>
+<header><h1>🌍 MY COMMUNITY</h1><div id="progress">Frank's Class • Local Offer</div></header>
+
+<section id="home" class="screen active">
+<h2>Choose a game</h2>
+<p class="instructions">You can work by yourself. Tap a game. Listen, look and choose.</p>
+<div class="grid">
+<button class="card" onclick="start(1)">📍<span class="label">1. Know the Place</span></button>
+<button class="card" onclick="start(2)">❤️<span class="label">2. I LIKE</span></button>
+<button class="card" onclick="start(3)">🚫<span class="label">3. I DON'T LIKE</span></button>
+<button class="card" onclick="start(4)">🔗<span class="label">4. Match the Place</span></button>
+<button class="card" onclick="start(5)">⭐<span class="label">5. Choose a Visit</span></button>
+<button class="card" onclick="start(6)">🧭<span class="label">6. Plan a Visit</span></button>
+</div>
+<div class="nav"><button onclick="speak('Welcome to My Community. Choose a game.')">🔊 Read this page</button></div>
+</section>
+
+<section id="game" class="screen">
+<h2 id="title"></h2><p id="instructions" class="instructions"></p><div id="content"></div>
+<div id="feedback" class="feedback"></div><div class="score" id="score"></div>
+<div class="nav"><button onclick="goHome()">🏠 Home</button><button onclick="repeat()">🔊 Repeat</button></div>
+</section>
+
+<section id="finish" class="screen">
+<div id="celebration">🎉 ⭐ 🥳</div>
+<h2>GREAT WORK!</h2><p class="instructions">You used your community skills.</p>
+<div class="grid">
+<button onclick="speak('I like my community')">❤️ I LIKE</button>
+<button onclick="speak('I did it')">👏 I DID IT</button>
+<button onclick="speak('I am proud')">⭐ I AM PROUD</button>
+</div>
+<p class="small">You can choose another game or finish.</p>
+<div class="nav"><button onclick="goHome()">🏠 More games</button></div>
+</section>
+
+<script>
+let gameNo=0, question=0, score=0, currentTask=null, selected=null;
+const places=[
+ ['📚','Library'],['🛒','Shop'],['🌳','Park'],['☕','Café'],['🏛️','Museum'],['🏊','Leisure centre']
+];
+function speak(t){if('speechSynthesis'in window){speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(t);u.rate=.9;speechSynthesis.speak(u)}}
+function show(id){document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));document.getElementById(id).classList.add('active')}
+function goHome(){show('home');speak('Choose a game')}
+function start(n){gameNo=n;question=0;score=0;show('game');render()}
+function repeat(){if(currentTask)speak(currentTask)}
+function setHeader(){document.getElementById('score').textContent='Stars: '+score+' ⭐'}
+function sayAndListen(text){currentTask=text;speak(text)}
+function render(){
+ let title=['','KNOW THE PLACE','I LIKE','I DON’T LIKE','MATCH THE PLACE','CHOOSE A VISIT','PLAN A VISIT'][gameNo];
+ document.getElementById('title').textContent=title;
+ document.getElementById('feedback').textContent=''; setHeader();
+ if(gameNo===1) game1(); if(gameNo===2) game2(); if(gameNo===3) game3();
+ if(gameNo===4) game4(); if(gameNo===5) game5(); if(gameNo===6) game6();
+}
+function cards(items,click){
+ let d=document.createElement('div');d.className='grid';
+ items.forEach((x,i)=>{let b=document.createElement('button');b.className='card';b.innerHTML='<span class="icon">'+x[0]+'</span><span class="label">'+x[1]+'</span>';b.onclick=()=>click(i,x);d.appendChild(b)});return d;
+}
+function feedback(ok){
+ let f=document.getElementById('feedback'); if(ok){score++;f.textContent='⭐ Great choice!';f.className='feedback good';speak('Great choice!')}else{f.textContent='👍 Good try. Have another go.';f.className='feedback try';speak('Good try. Have another go.')}setHeader();
+}
+function nextOrFinish(max){setTimeout(()=>{question++; if(question>=max){show('finish');speak('Great work! You finished the game.')}else render()},700)}
+
+function game1(){
+ let tasks=[['📚','Library'],['🛒','Shop'],['🌳','Park'],['☕','Café']];
+ let target=tasks[question%tasks.length][1]; document.getElementById('instructions').textContent='Tap: '+target;
+ sayAndListen('Find the '+target);
+ document.getElementById('content').replaceChildren(cards(tasks,(i,x)=>{let ok=x[1]===target;feedback(ok);if(ok)nextOrFinish(4)}));
+}
+function game2(){
+ let tasks=[['📚','Library'],['🛒','Shop'],['☕','Café'],['🌳','Park']];
+ let target=tasks[question%4][1];document.getElementById('instructions').textContent='Choose the place you like.';
+ sayAndListen('Which place do you like? Choose one.');
+ document.getElementById('content').replaceChildren(cards(tasks,(i,x)=>{feedback(true);speak('You like '+x[1]);nextOrFinish(4)}));
+}
+function game3(){
+ let tasks=[['🚌','Bus'],['🔊','Loud noise'],['👥','Crowded place'],['🌧️','Rain']];
+ document.getElementById('instructions').textContent='Choose one. There is no wrong answer.';
+ sayAndListen('Choose something you do not like.');
+ document.getElementById('content').replaceChildren(cards(tasks,(i,x)=>{feedback(true);speak('You do not like '+x[1]);nextOrFinish(4)}));
+}
+function game4(){
+ let pairs=[
+ ['📚 Library','📖 Borrow a book'],['🛒 Shop','🛍️ Buy something'],
+ ['🌳 Park','🚶 Walk or relax'],['☕ Café','🥤 Have a drink']
+ ];
+ let p=pairs[question%4];document.getElementById('instructions').textContent='What can you do there?';
+ sayAndListen('At the '+p[0].replace(/^[^ ]+ /,'')+', what can you do?');
+ let opts=pairs.map(x=>['',x[1]]).sort(()=>Math.random()-.5);
+ document.getElementById('content').replaceChildren(cards(opts,(i,x)=>{let ok=x[1]===p[1];feedback(ok);if(ok)nextOrFinish(4)}));
+}
+function game5(){
+ let opts=[['📚','Library'],['🏛️','Museum'],['🌳','Park'],['🏊','Leisure centre']];
+ document.getElementById('instructions').textContent='Choose a place you would like to visit.';
+ sayAndListen('Choose a place you would like to visit.');
+ document.getElementById('content').replaceChildren(cards(opts,(i,x)=>{feedback(true);speak('You chose '+x[1]);nextOrFinish(4)}));
+}
+function game6(){
+ let qs=[
+ ['📍 WHERE?','Where will you go?',['📚 Library','🏛️ Museum','🌳 Park']],
+ ['🚌 HOW?','How will you get there?',['🚶 Walk','🚌 Bus','🚇 Tube']],
+ ['🕐 WHEN?','When will you go?',['🌞 Morning','☀️ Afternoon','🌙 Later']],
+ ['🤝 WHO?','Who can help you?',['👩 Staff','👨 Family','🧑 Friend']]
+ ];
+ let q=qs[question%4];document.getElementById('instructions').textContent=q[1];
+ sayAndListen(q[1]+' Choose one.');
+ let opts=q[2].map(v=>['',v]);document.getElementById('content').replaceChildren(cards(opts,(i,x)=>{feedback(true);speak(x[1]);nextOrFinish(4)}));
+}
+</script>
+</body>
+</html>

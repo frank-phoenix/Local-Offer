@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Phoenix College Coreboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --yellow:#F5C842;--yellow-bg:#FEF9E7;--yellow-border:#E8B800;
+  --pink:#F48FB1;--pink-bg:#FCE4EC;--pink-border:#E91E8C;
+  --blue:#90CAF9;--blue-bg:#E3F2FD;--blue-border:#1565C0;
+  --green:#A5D6A7;--green-bg:#E8F5E9;--green-border:#2E7D32;
+  --cream:#F5F0DC;--cream-border:#C8A96A;
+  --red-cell:#EF9A9A;--red-bg:#FFEBEE;--red-border:#C62828;
+  --sentence-bg:#1A1A2E;
+  --r:12px;
+}
+body{font-family:'Nunito',sans-serif;background:#F0EDE8;min-height:100vh;display:flex;flex-direction:column;overflow-x:hidden;}
+
+/* HEADER */
+header{background:linear-gradient(135deg,#FF6B35,#F7C04A,#4CAF82,#4A90E8);padding:0.7rem 1rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.logo{font-family:'Fredoka One',cursive;font-size:1.6rem;color:white;text-shadow:2px 2px 0 rgba(0,0,0,0.2);display:flex;align-items:center;gap:8px;}
+.header-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.hbtn{background:rgba(255,255,255,0.85);border:none;border-radius:50px;padding:7px 14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer;transition:all 0.18s;color:#333;display:flex;align-items:center;gap:5px;}
+.hbtn:hover{background:white;transform:scale(1.05);}
+.hbtn.muted{background:#EF5350;color:white;}
+
+/* SENTENCE BAR */
+.sentence-bar{background:var(--sentence-bg);padding:0.8rem 1rem;display:flex;align-items:center;gap:10px;min-height:70px;flex-wrap:wrap;}
+.sentence-chips{display:flex;flex-wrap:wrap;gap:6px;flex:1;align-items:center;min-height:44px;}
+.schip{border-radius:50px;padding:8px 15px;font-size:1rem;font-weight:800;cursor:pointer;transition:all 0.2s;display:inline-flex;align-items:center;gap:5px;border:none;font-family:'Nunito',sans-serif;animation:chipIn 0.2s cubic-bezier(0.175,0.885,0.32,1.275);}
+@keyframes chipIn{0%{transform:scale(0);opacity:0;}100%{transform:scale(1);opacity:1;}}
+.schip:hover{filter:brightness(1.15);transform:scale(1.05);}
+.schip .cx{opacity:0.6;font-size:0.75rem;margin-left:2px;}
+.sentence-placeholder{color:rgba(255,255,255,0.3);font-weight:700;font-size:1rem;font-style:italic;}
+.sentence-actions{display:flex;gap:8px;flex-shrink:0;}
+.sact{border:none;border-radius:50px;padding:9px 18px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;gap:6px;}
+.sact:hover{transform:scale(1.06);}
+.sact-speak{background:#22C55E;color:white;}
+.sact-speak.speaking{animation:speakPulse 0.7s ease-in-out infinite alternate;}
+@keyframes speakPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,0.6);}100%{box-shadow:0 0 0 10px rgba(34,197,94,0);}}
+.sact-clear{background:#EF4444;color:white;}
+.sact-back{background:#6B7280;color:white;}
+
+/* LEGEND */
+.legend{background:white;padding:0.5rem 1rem;display:flex;gap:16px;align-items:center;flex-wrap:wrap;border-bottom:2px solid #E5DDD0;}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:0.8rem;font-weight:800;color:#444;}
+.leg-dot{width:18px;height:18px;border-radius:5px;flex-shrink:0;border:1.5px solid rgba(0,0,0,0.15);}
+
+/* GRID */
+.board-wrap{flex:1;padding:0.8rem;overflow-y:auto;}
+.board{display:grid;grid-template-columns:repeat(10,1fr);gap:6px;max-width:1100px;margin:0 auto;}
+
+/* CELL */
+.cell{border-radius:var(--r);border:2.5px solid;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px 4px 5px;gap:3px;transition:all 0.16s;user-select:none;min-height:80px;position:relative;-webkit-tap-highlight-color:transparent;}
+.cell:hover{transform:scale(1.07);filter:brightness(1.08);z-index:2;}
+.cell:active{transform:scale(0.95);}
+.cell:focus-visible{outline:3px solid #7C3AED;outline-offset:2px;z-index:3;}
+.cell-sym{width:44px;height:44px;display:flex;align-items:center;justify-content:center;}
+.cell-sym svg{width:100%;height:100%;}
+.cell-label{font-size:0.7rem;font-weight:900;text-align:center;line-height:1.2;letter-spacing:0.01em;}
+
+/* colour classes */
+.c-yellow{background:var(--yellow-bg);border-color:var(--yellow-border);}
+.c-yellow .cell-label{color:#7a5800;}
+.c-pink{background:var(--pink-bg);border-color:var(--pink-border);}
+.c-pink .cell-label{color:#880E4F;}
+.c-blue{background:var(--blue-bg);border-color:var(--blue-border);}
+.c-blue .cell-label{color:#0D47A1;}
+.c-green{background:var(--green-bg);border-color:var(--green-border);}
+.c-green .cell-label{color:#1B5E20;}
+.c-cream{background:var(--cream);border-color:var(--cream-border);}
+.c-cream .cell-label{color:#5a3e00;}
+.c-red{background:var(--red-bg);border-color:var(--red-border);}
+.c-red .cell-label{color:#7f0000;}
+
+/* chip colour map */
+.cc-yellow{background:var(--yellow);color:#5a3800;}
+.cc-pink{background:var(--pink);color:#5c0030;}
+.cc-blue{background:var(--blue);color:#0a2a5e;}
+.cc-green{background:var(--green);color:#1a4020;}
+.cc-cream{background:#E8D9A0;color:#4a3200;}
+.cc-red{background:var(--red-cell);color:#5c0000;}
+
+/* PRESS animation */
+@keyframes pressFlash{0%{filter:brightness(2);}100%{filter:brightness(1);}}
+.cell.flash{animation:pressFlash 0.3s ease;}
+
+/* MOBILE */
+@media(max-width:700px){
+  .board{grid-template-columns:repeat(5,1fr);}
+  .cell{min-height:70px;}
+  .cell-sym{width:36px;height:36px;}
+  .logo{font-size:1.2rem;}
+}
+@media(max-width:440px){
+  .board{grid-template-columns:repeat(4,1fr);}
+  .cell-label{font-size:0.62rem;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🔥 Phoenix College Coreboard</div>
+  <div class="header-btns">
+    <button class="hbtn" id="muteBtn" onclick="toggleMute()" aria-pressed="false">🔊 Sound on</button>
+    <button class="hbtn" onclick="exportSentence()">📄 Export</button>
+    <button class="hbtn" onclick="showHelp()">❓ Help</button>
+  </div>
+</header>
+
+<!-- SENTENCE BAR -->
+<div class="sentence-bar" role="region" aria-label="Sentence builder" aria-live="polite">
+  <div class="sentence-chips" id="sentenceChips">
+    <span class="sentence-placeholder" id="sentPlaceholder">Tap a word to start your sentence...</span>
+  </div>
+  <div class="sentence-actions">
+    <button class="sact sact-back" onclick="removeLastWord()" aria-label="Remove last word" title="Remove last word">⌫</button>
+    <button class="sact sact-speak" id="speakBtn" onclick="speakSentence()" aria-label="Speak sentence">🔊 Speak</button>
+    <button class="sact sact-clear" onclick="clearSentence()" aria-label="Clear sentence">✕ Clear</button>
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend" role="note" aria-label="Colour key">
+  <strong style="font-size:0.85rem;color:#555;">Key:</strong>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--yellow-bg);border-color:var(--yellow-border)"></div>Pronouns / Core</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--pink-bg);border-color:var(--pink-border)"></div>Questions</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--blue-bg);border-color:var(--blue-border)"></div>Location</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--green-bg);border-color:var(--green-border)"></div>Social</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--cream);border-color:var(--cream-border)"></div>Verbs / Descriptors</div>
+  <div class="leg-item"><div class="leg-dot" style="background:var(--red-bg);border-color:var(--red-border)"></div>Negation</div>
+</div>
+
+<!-- BOARD -->
+<div class="board-wrap">
+<div class="board" id="board" role="grid" aria-label="Core vocabulary board"></div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="helpModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:200;align-items:center;justify-content:center;" role="dialog" aria-modal="true">
+  <div style="background:white;border-radius:20px;padding:1.8rem;max-width:420px;width:90%;max-height:85vh;overflow-y:auto;">
+    <div style="font-family:'Fredoka One',cursive;font-size:1.6rem;color:#E85D04;margin-bottom:1rem;">🔥 How to use</div>
+    <div style="font-weight:700;font-size:0.95rem;line-height:1.8;color:#333;">
+      👆 <b>Tap / click</b> any word to add it to your sentence<br>
+      🔊 Press <b>Speak</b> to hear your sentence read aloud<br>
+      ⌫ Press <b>⌫</b> to remove the last word<br>
+      ✕ Press <b>Clear</b> to start again<br>
+      📄 Press <b>Export</b> to save your sentence as a text file<br>
+      🔇 Press <b>Sound on/off</b> to mute speech<br><br>
+      <b>Keyboard:</b> Tab to move between cells, Enter or Space to select
+    </div>
+    <button onclick="document.getElementById('helpModal').style.display='none'" style="margin-top:1.2rem;background:#E85D04;color:white;border:none;border-radius:50px;padding:12px 28px;font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;width:100%;">Got it! 🔥</button>
+  </div>
+</div>
+
+<script>
+let sentence=[];
+let muted=false;
+let synth=window.speechSynthesis;
+
+/* ── SYMBOLS as inline SVG paths ──────────────────────────────────────────── */
+/* Each returns an SVG string */
+function sym(d){return`<svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">${d}</svg>`;}
+const S={
+  // Row 1
+  I: sym(`<circle cx="30" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="21" x2="30" y2="44" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="18" y1="30" x2="42" y2="30" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="44" x2="18" y2="56" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="44" x2="42" y2="56" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="28" y1="10" x2="32" y2="6" stroke="#B8860B" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  it: sym(`<circle cx="30" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="21" x2="30" y2="44" stroke="#5a3800" stroke-width="3"/>
+    <line x1="18" y1="30" x2="42" y2="30" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="44" x2="18" y2="56" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="44" x2="42" y2="56" stroke="#5a3800" stroke-width="3"/>
+    <text x="44" y="22" font-size="14" fill="#B8860B" font-weight="bold" font-family="sans-serif">→</text>`),
+
+  who: sym(`<circle cx="30" cy="14" r="7" fill="none" stroke="#880E4F" stroke-width="3"/>
+    <line x1="30" y1="21" x2="30" y2="44" stroke="#880E4F" stroke-width="3"/>
+    <line x1="18" y1="30" x2="42" y2="30" stroke="#880E4F" stroke-width="3"/>
+    <line x1="30" y1="44" x2="18" y2="56" stroke="#880E4F" stroke-width="3"/>
+    <line x1="30" y1="44" x2="42" y2="56" stroke="#880E4F" stroke-width="3"/>
+    <text x="44" y="16" font-size="16" fill="#880E4F" font-weight="bold" font-family="sans-serif">?</text>`),
+
+  what: sym(`<rect x="15" y="18" width="30" height="26" rx="4" fill="none" stroke="#880E4F" stroke-width="3"/>
+    <text x="30" y="36" font-size="16" fill="#880E4F" font-weight="bold" font-family="sans-serif" text-anchor="middle">?</text>`),
+
+  when: sym(`<circle cx="30" cy="30" r="18" fill="none" stroke="#880E4F" stroke-width="3"/>
+    <line x1="30" y1="16" x2="30" y2="30" stroke="#880E4F" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="30" x2="42" y2="36" stroke="#880E4F" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="44" y="16" font-size="16" fill="#880E4F" font-weight="bold" font-family="sans-serif">?</text>`),
+
+  how: sym(`<polyline points="15,45 25,20 35,35 45,15" fill="none" stroke="#880E4F" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+    <text x="44" y="55" font-size="16" fill="#880E4F" font-weight="bold" font-family="sans-serif">?</text>`),
+
+  howmuch: sym(`<circle cx="22" cy="24" r="5" fill="#E91E8C" opacity="0.3"/>
+    <circle cx="30" cy="20" r="5" fill="#E91E8C" opacity="0.5"/>
+    <circle cx="38" cy="24" r="5" fill="#E91E8C" opacity="0.7"/>
+    <circle cx="26" cy="32" r="5" fill="#E91E8C" opacity="0.5"/>
+    <circle cx="34" cy="32" r="5" fill="#E91E8C" opacity="0.6"/>
+    <circle cx="30" cy="40" r="5" fill="#E91E8C"/>
+    <text x="44" y="16" font-size="16" fill="#880E4F" font-weight="bold" font-family="sans-serif">?</text>`),
+
+  all: sym(`<line x1="14" y1="14" x2="14" y2="46" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="22" y1="10" x2="22" y2="50" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="8"  x2="30" y2="52" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="38" y1="10" x2="38" y2="50" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="46" y1="14" x2="46" y2="46" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>`),
+
+  that: sym(`<circle cx="30" cy="20" r="7" fill="none" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="30" y1="27" x2="30" y2="46" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="20" y1="35" x2="40" y2="35" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="22" y2="56" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="38" y2="56" stroke="#1B5E20" stroke-width="2.5"/>
+    <circle cx="48" cy="44" r="5" fill="#EF9A9A"/>
+    <line x1="44" y1="14" x2="55" y2="26" stroke="#1B5E20" stroke-width="2" stroke-dasharray="2,2"/>`),
+
+  this: sym(`<circle cx="24" cy="20" r="7" fill="none" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="24" y1="27" x2="24" y2="46" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="14" y1="35" x2="34" y2="35" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="24" y1="46" x2="16" y2="56" stroke="#1B5E20" stroke-width="2.5"/>
+    <line x1="24" y1="46" x2="32" y2="56" stroke="#1B5E20" stroke-width="2.5"/>
+    <circle cx="46" cy="40" r="5" fill="#EF9A9A"/>
+    <line x1="30" y1="38" x2="40" y2="38" stroke="#1B5E20" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="38" y1="34" x2="42" y2="38" stroke="#1B5E20" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="38" y1="42" x2="42" y2="38" stroke="#1B5E20" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  // Row 2
+  me: sym(`<circle cx="30" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="21" x2="30" y2="44" stroke="#5a3800" stroke-width="3"/>
+    <line x1="18" y1="30" x2="42" y2="30" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="44" x2="18" y2="56" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="44" x2="42" y2="56" stroke="#5a3800" stroke-width="3"/>
+    <line x1="32" y1="28" x2="28" y2="8" stroke="#B8860B" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="28" y1="8"  x2="30" y2="12" stroke="#B8860B" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  mymine: sym(`<circle cx="22" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="21" x2="22" y2="40" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="12" y1="29" x2="32" y2="29" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="40" x2="14" y2="52" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="40" x2="30" y2="52" stroke="#5a3800" stroke-width="2.5"/>
+    <rect x="34" y="28" width="18" height="20" rx="3" fill="none" stroke="#B8860B" stroke-width="2.5"/>
+    <line x1="40" y1="28" x2="38" y2="22" stroke="#B8860B" stroke-width="2.5"/>
+    <line x1="46" y1="28" x2="44" y2="22" stroke="#B8860B" stroke-width="2.5"/>`),
+
+  notdont: sym(`<circle cx="30" cy="30" r="20" fill="none" stroke="#C62828" stroke-width="3"/>
+    <line x1="16" y1="16" x2="44" y2="44" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>`),
+
+  amis: sym(`<text x="30" y="36" font-size="20" fill="#5a3800" font-weight="bold" font-family="sans-serif" text-anchor="middle">=</text>`),
+
+  again: sym(`<path d="M 46 20 A 18 18 0 1 0 46 40" fill="none" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <polyline points="46,14 46,22 38,22" fill="none" stroke="#5a3800" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>`),
+
+  now: sym(`<circle cx="30" cy="30" r="18" fill="none" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="16" x2="30" y2="30" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="30" x2="38" y2="34" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="18" y1="48" x2="42" y2="48" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>`),
+
+  gone: sym(`<circle cx="22" cy="18" r="7" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="25" x2="22" y2="44" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="12" y1="33" x2="32" y2="33" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="44" x2="14" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="44" x2="30" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="34" y1="30" x2="52" y2="30" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="46" y1="24" x2="52" y2="30" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="46" y1="36" x2="52" y2="30" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  some: sym(`<line x1="16" y1="20" x2="16" y2="40" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="16" y1="20" x2="16" y2="40" stroke="#5a3800" stroke-width="3"/>
+    <line x1="24" y1="16" x2="24" y2="44" stroke="#5a3800" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3"/>
+    <line x1="36" y1="16" x2="36" y2="44" stroke="#5a3800" stroke-width="3" stroke-linecap="round" stroke-dasharray="4,3"/>
+    <line x1="44" y1="20" x2="44" y2="40" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>`),
+
+  bad: sym(`<rect x="12" y="20" width="36" height="24" rx="4" fill="#EF9A9A"/>
+    <line x1="20" y1="28" x2="40" y2="28" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>
+    <line x1="20" y1="36" x2="35" y2="36" stroke="#C62828" stroke-width="2.5" stroke-linecap="round"/>
+    <polyline points="12,16 8,8 52,8 48,16" fill="none" stroke="#5a3800" stroke-width="2"/>`),
+
+  big: sym(`<rect x="10" y="10" width="40" height="40" rx="4" fill="#E8D9A0" stroke="#5a3800" stroke-width="3"/>`),
+
+  // Row 3
+  youyour: sym(`<circle cx="30" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="21" x2="30" y2="44" stroke="#5a3800" stroke-width="3"/>
+    <line x1="18" y1="30" x2="42" y2="30" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="44" x2="18" y2="56" stroke="#5a3800" stroke-width="3"/>
+    <line x1="30" y1="44" x2="42" y2="56" stroke="#5a3800" stroke-width="3"/>
+    <circle cx="46" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="2"/>
+    <line x1="46" y1="21" x2="46" y2="38" stroke="#5a3800" stroke-width="2"/>
+    <line x1="38" y1="28" x2="54" y2="28" stroke="#5a3800" stroke-width="2"/>
+    <line x1="46" y1="38" x2="40" y2="48" stroke="#5a3800" stroke-width="2"/>
+    <line x1="46" y1="38" x2="52" y2="48" stroke="#5a3800" stroke-width="2"/>`),
+
+  come: sym(`<circle cx="30" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="21" x2="30" y2="44" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="18" y1="32" x2="30" y2="26" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="18" y1="32" x2="30" y2="26" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="20" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="40" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="42" y1="30" x2="30" y2="24" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="30" y1="24" x2="34" y2="30" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>`),
+
+  dododid: sym(`<circle cx="18" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="18" y1="20" x2="18" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="10" y1="27" x2="26" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <rect x="30" y="22" width="22" height="20" rx="3" fill="#E8D9A0" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="38" y1="22" x2="34" y2="16" stroke="#5a3800" stroke-width="2"/>
+    <line x1="34" y1="16" x2="34" y2="12" stroke="#5a3800" stroke-width="2"/>
+    <line x1="34" y1="12" x2="42" y2="12" stroke="#5a3800" stroke-width="2"/>
+    <line x1="42" y1="12" x2="42" y2="16" stroke="#5a3800" stroke-width="2"/>
+    <line x1="42" y1="16" x2="44" y2="22" stroke="#5a3800" stroke-width="2"/>`),
+
+  drink: sym(`<path d="M 20 14 L 16 50 L 44 50 L 40 14 Z" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="16" y1="32" x2="44" y2="32" stroke="#5a3800" stroke-width="2" stroke-dasharray="3,2"/>
+    <line x1="30" y1="14" x2="30" y2="8"  stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="24" y1="8"  x2="36" y2="8"  stroke="#5a3800" stroke-width="2.5"/>
+    <ellipse cx="32" cy="38" rx="6" ry="5" fill="#90CAF9" opacity="0.7"/>`),
+
+  latelater: sym(`<circle cx="30" cy="30" r="18" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="16" x2="30" y2="30" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="30" y1="30" x2="42" y2="36" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 20 52 Q 30 46 40 52" fill="none" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  ready: sym(`<circle cx="30" cy="18" r="8" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="26" x2="30" y2="44" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="34" x2="30" y2="28" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="20" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="40" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="40" y1="28" x2="30" y2="28" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="40" y1="28" x2="44" y2="22" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="44" y1="22" x2="46" y2="16" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>`),
+
+  more: sym(`<path d="M 16 36 A 14 14 0 0 1 44 36" fill="none" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="16" x2="30" y2="28" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="22" y1="22" x2="38" y2="22" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  finished: sym(`<line x1="14" y1="14" x2="28" y2="14" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>
+    <line x1="14" y1="14" x2="14" y2="46" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>
+    <line x1="32" y1="14" x2="46" y2="14" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>
+    <line x1="46" y1="14" x2="46" y2="46" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>
+    <line x1="14" y1="30" x2="46" y2="30" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>
+    <line x1="14" y1="46" x2="46" y2="46" stroke="#C62828" stroke-width="3" stroke-linecap="round"/>`),
+
+  clean: sym(`<rect x="18" y="16" width="24" height="32" rx="4" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="24" x2="38" y2="24" stroke="#90CAF9" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="22" y1="30" x2="38" y2="30" stroke="#90CAF9" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="22" y1="36" x2="34" y2="36" stroke="#90CAF9" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  cold: sym(`<circle cx="30" cy="22" r="10" fill="#E3F2FD" stroke="#1565C0" stroke-width="2.5"/>
+    <circle cx="30" cy="22" r="5" fill="#90CAF9"/>
+    <line x1="22" y1="44" x2="26" y2="36" stroke="#5a3800" stroke-width="2"/>
+    <line x1="38" y1="44" x2="34" y2="36" stroke="#5a3800" stroke-width="2"/>
+    <line x1="22" y1="44" x2="38" y2="44" stroke="#5a3800" stroke-width="2"/>
+    <path d="M 24 50 Q 30 56 36 50" fill="none" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>`),
+
+  // Row 4
+  eat: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="36" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="26" x2="30" y2="26" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="36" x2="16" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="36" x2="28" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 34 12 C 34 12 50 20 50 30 C 50 36 46 40 34 40" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="40" y1="30" x2="36" y2="26" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="26" x2="34" y2="22" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>`),
+
+  feel: sym(`<circle cx="30" cy="14" r="7" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="21" x2="30" y2="44" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="18" y1="30" x2="42" y2="30" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="20" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="40" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 30 30 Q 38 24 42 30" fill="#F48FB1" stroke="none"/>
+    <line x1="36" y1="24" x2="42" y2="22" stroke="#C2185B" stroke-width="2" stroke-linecap="round"/>`),
+
+  get: sym(`<circle cx="20" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="20" x2="20" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="12" y1="27" x2="28" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="14" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="26" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <rect x="32" y="28" width="20" height="18" rx="3" fill="#E8D9A0" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="38" y1="28" x2="42" y2="22" stroke="#5a3800" stroke-width="2"/>
+    <line x1="24" y1="32" x2="32" y2="32" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="28" y1="28" x2="32" y2="32" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="28" y1="36" x2="32" y2="32" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>`),
+
+  give: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="40" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="12" y1="27" x2="22" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="40" x2="16" y2="50" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="40" x2="28" y2="50" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="33" x2="44" y2="33" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="38" y="26" width="14" height="14" rx="2" fill="#F5C842" stroke="#5a3800" stroke-width="2"/>
+    <line x1="44" y1="18" x2="44" y2="26" stroke="#C2185B" stroke-width="2" stroke-linecap="round"/>
+    <path d="M 40 22 Q 44 18 48 22" fill="none" stroke="#C2185B" stroke-width="2" stroke-linecap="round"/>`),
+
+  gowent: sym(`<circle cx="18" cy="14" r="6" fill="none" stroke="#880E4F" stroke-width="2.5"/>
+    <line x1="18" y1="20" x2="18" y2="38" stroke="#880E4F" stroke-width="2.5"/>
+    <line x1="10" y1="27" x2="26" y2="27" stroke="#880E4F" stroke-width="2.5"/>
+    <line x1="18" y1="38" x2="12" y2="48" stroke="#880E4F" stroke-width="2.5"/>
+    <line x1="18" y1="38" x2="24" y2="48" stroke="#880E4F" stroke-width="2.5"/>
+    <line x1="30" y1="30" x2="48" y2="30" stroke="#880E4F" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="42" y1="24" x2="48" y2="30" stroke="#880E4F" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="42" y1="36" x2="48" y2="30" stroke="#880E4F" stroke-width="2.5" stroke-linecap="round"/>
+    <text x="42" y="52" font-size="9" fill="#880E4F" font-weight="bold" font-family="sans-serif" text-anchor="middle">?</text>`),
+
+  where: sym(`<line x1="30" y1="8"  x2="8"  y2="38" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="8"  x2="52" y2="38" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="8"  y1="38" x2="52" y2="38" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="38" x2="30" y2="52" stroke="#0D47A1" stroke-width="2.5" stroke-dasharray="3,2"/>
+    <text x="46" y="24" font-size="14" fill="#0D47A1" font-weight="bold" font-family="sans-serif">?</text>`),
+
+  away: sym(`<circle cx="20" cy="14" r="6" fill="none" stroke="#0D47A1" stroke-width="2.5"/>
+    <line x1="20" y1="20" x2="20" y2="38" stroke="#0D47A1" stroke-width="2.5"/>
+    <line x1="12" y1="27" x2="28" y2="27" stroke="#0D47A1" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="14" y2="48" stroke="#0D47A1" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="26" y2="48" stroke="#0D47A1" stroke-width="2.5"/>
+    <circle cx="46" cy="28" r="6" fill="#EF9A9A"/>
+    <line x1="30" y1="28" x2="38" y2="28" stroke="#0D47A1" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="34" y1="22" x2="38" y2="28" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>
+    <line x1="34" y1="34" x2="38" y2="28" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>`),
+
+  different: sym(`<rect x="8"  y="10" width="18" height="18" rx="9" fill="#F5C842" stroke="#5a3800" stroke-width="2"/>
+    <rect x="34" y="32" width="18" height="18" rx="3" fill="#E8D9A0" stroke="#5a3800" stroke-width="2"/>
+    <line x1="10" y1="48" x2="50" y2="12" stroke="#C62828" stroke-width="2.5" stroke-dasharray="3,3"/>`),
+
+  dirty: sym(`<circle cx="30" cy="20" r="10" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="24" cy="18" r="2" fill="#5a3800"/>
+    <circle cx="36" cy="18" r="2" fill="#5a3800"/>
+    <path d="M 26 26 Q 30 22 34 26" fill="none" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="30" y1="30" x2="30" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="40" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <ellipse cx="30" cy="52" rx="12" ry="4" fill="#A5D6A7" opacity="0.6"/>
+    <line x1="26" y1="46" x2="22" y2="54" stroke="#5a3800" stroke-width="2"/>
+    <line x1="34" y1="46" x2="38" y2="54" stroke="#5a3800" stroke-width="2"/>`),
+
+  fast: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="27" x2="28" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="34" y1="20" x2="52" y2="20" stroke="#EF4444" stroke-width="3" stroke-linecap="round"/>
+    <line x1="34" y1="28" x2="52" y2="28" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="34" y1="36" x2="52" y2="36" stroke="#EF4444" stroke-width="2" stroke-linecap="round"/>`),
+
+  // Row 5
+  hearlisten: sym(`<path d="M 14 22 Q 14 10 30 10 Q 46 10 46 22 Q 46 36 34 40 L 34 46" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="34" cy="50" r="2.5" fill="#5a3800"/>
+    <path d="M 4 24 Q 4 16 8 20" fill="none" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 4 30 Q 2 22 6 18" fill="none" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 4 36 Q 0 26 4 14" fill="none" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  help: sym(`<rect x="10" y="10" width="40" height="40" rx="6" fill="#1565C0"/>
+    <text x="30" y="36" font-size="22" fill="white" font-weight="bold" font-family="sans-serif" text-anchor="middle">?</text>`),
+
+  like: sym(`<path d="M 30 44 L 12 28 A 12 12 0 0 1 30 16 A 12 12 0 0 1 48 28 Z" fill="#F48FB1" stroke="#C2185B" stroke-width="2.5"/>`),
+
+  looksee: sym(`<circle cx="30" cy="28" r="14" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="30" cy="28" r="6" fill="#5a3800"/>
+    <circle cx="34" cy="24" r="3" fill="white"/>
+    <line x1="16" y1="40" x2="24" y2="36" stroke="#5a3800" stroke-width="2"/>
+    <line x1="44" y1="40" x2="36" y2="36" stroke="#5a3800" stroke-width="2"/>`),
+
+  make: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="28" x2="28" y2="28" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <rect x="34" y="26" width="18" height="24" rx="3" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="38" y1="32" x2="48" y2="32" stroke="#5a3800" stroke-width="2"/>
+    <line x1="38" y1="38" x2="44" y2="38" stroke="#5a3800" stroke-width="2"/>
+    <line x1="34" y1="22" x2="52" y2="22" stroke="#F5C842" stroke-width="3" stroke-linecap="round"/>`),
+
+  here: sym(`<circle cx="30" cy="28" r="5" fill="#EF9A9A"/>
+    <line x1="30" y1="10" x2="30" y2="20" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="36" x2="30" y2="52" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="28" x2="14" y2="28" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="28" x2="46" y2="28" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="14" y1="40" x2="46" y2="40" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>`),
+
+  there: sym(`<circle cx="30" cy="22" r="5" fill="#EF9A9A"/>
+    <line x1="30" y1="8"  x2="30" y2="14" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="28" x2="30" y2="52" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="22" x2="14" y2="22" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="30" y1="22" x2="46" y2="22" stroke="#0D47A1" stroke-width="3" stroke-linecap="round"/>
+    <line x1="14" y1="48" x2="46" y2="48" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>
+    <line x1="40" y1="30" x2="46" y2="22" stroke="#0D47A1" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  good: sym(`<path d="M 12 30 L 24 46 L 50 14" fill="none" stroke="#2E7D32" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`),
+
+  happy: sym(`<circle cx="30" cy="30" r="20" fill="#FFF9C4" stroke="#F9A825" stroke-width="2.5"/>
+    <circle cx="22" cy="24" r="3" fill="#5a3800"/>
+    <circle cx="38" cy="24" r="3" fill="#5a3800"/>
+    <path d="M 18 36 Q 30 48 42 36" fill="none" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>`),
+
+  hot: sym(`<circle cx="30" cy="30" r="16" fill="#FFCCBC" stroke="#E64A19" stroke-width="2.5"/>
+    <circle cx="30" cy="30" r="8" fill="#EF9A9A"/>
+    <path d="M 22 12 Q 24 8 22 4" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 30 10 Q 32 6 30 2" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 38 12 Q 40 8 38 4" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  // Row 6
+  openclose: sym(`<rect x="8"  y="20" width="18" height="22" rx="3" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="17" y1="20" x2="17" y2="14" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="17" y1="14" x2="10" y2="14" stroke="#5a3800" stroke-width="2"/>
+    <rect x="34" y="16" width="18" height="26" rx="3" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="43" y1="16" x2="43" y2="10" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="43" y1="10" x2="36" y2="10" stroke="#5a3800" stroke-width="2"/>
+    <line x1="26" y1="30" x2="34" y2="30" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  play: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="27" x2="28" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="40" cy="20" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="40" y1="26" x2="40" y2="42" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="32" y1="32" x2="48" y2="32" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="40" y1="42" x2="34" y2="52" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="40" y1="42" x2="46" y2="52" stroke="#5a3800" stroke-width="2.5"/>`),
+
+  put: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="27" x2="22" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="27" x2="44" y2="27" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="38" y="16" width="14" height="14" rx="2" fill="#F5C842" stroke="#5a3800" stroke-width="2"/>
+    <line x1="45" y1="16" x2="45" y2="10" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="41" y1="13" x2="45" y2="10" stroke="#5a3800" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="49" y1="13" x2="45" y2="10" stroke="#5a3800" stroke-width="1.5" stroke-linecap="round"/>`),
+
+  read: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="27" x2="30" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 34 14 L 34 44 Q 30 44 30 40 L 30 14 Z" fill="#E3F2FD" stroke="#1565C0" stroke-width="2"/>
+    <path d="M 34 14 L 52 14 L 52 44 Q 48 44 34 44 Z" fill="white" stroke="#1565C0" stroke-width="2"/>
+    <line x1="36" y1="20" x2="50" y2="20" stroke="#5a3800" stroke-width="1.5"/>
+    <line x1="36" y1="26" x2="50" y2="26" stroke="#5a3800" stroke-width="1.5"/>
+    <line x1="36" y1="32" x2="50" y2="32" stroke="#5a3800" stroke-width="1.5"/>`),
+
+  saytell: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="27" x2="30" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 34 18 Q 34 10 44 10 Q 54 10 54 18 Q 54 26 44 26 L 36 30 L 38 24 Q 34 24 34 18 Z" fill="#FFF9C4" stroke="#5a3800" stroke-width="2"/>`),
+
+  in: sym(`<rect x="14" y="14" width="32" height="32" rx="4" fill="none" stroke="#0D47A1" stroke-width="3"/>
+    <circle cx="30" cy="30" r="5" fill="#EF9A9A"/>
+    <line x1="30" y1="6"  x2="30" y2="14" stroke="#0D47A1" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="24" y1="10" x2="30" y2="14" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="10" x2="30" y2="14" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>`),
+
+  out: sym(`<rect x="14" y="14" width="32" height="32" rx="4" fill="none" stroke="#0D47A1" stroke-width="3"/>
+    <circle cx="30" cy="30" r="5" fill="#EF9A9A"/>
+    <line x1="30" y1="46" x2="30" y2="54" stroke="#0D47A1" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="24" y1="50" x2="30" y2="54" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>
+    <line x1="36" y1="50" x2="30" y2="54" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>`),
+
+  hurt: sym(`<circle cx="30" cy="20" r="10" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="24" cy="18" r="2" fill="#5a3800"/>
+    <circle cx="36" cy="18" r="2" fill="#5a3800"/>
+    <path d="M 26 28 Q 30 24 34 28" fill="none" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="30" y1="30" x2="30" y2="44" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="40" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="24" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="36" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <text x="16" y="52" font-size="16" fill="#C62828">⚡</text>`),
+
+  little: sym(`<rect x="22" y="22" width="16" height="16" rx="3" fill="#E8D9A0" stroke="#5a3800" stroke-width="2.5"/>
+    <rect x="34" y="26" width="4" height="4" rx="1" fill="#5a3800" opacity="0.3"/>`),
+
+  sad: sym(`<circle cx="30" cy="30" r="20" fill="#FFF9C4" stroke="#F9A825" stroke-width="2.5"/>
+    <circle cx="22" cy="24" r="3" fill="#5a3800"/>
+    <circle cx="38" cy="24" r="3" fill="#5a3800"/>
+    <path d="M 18 42 Q 30 32 42 42" fill="none" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>
+    <line x1="22" y1="28" x2="22" y2="34" stroke="#90CAF9" stroke-width="2" stroke-linecap="round" stroke-dasharray="2,2"/>
+    <line x1="38" y1="28" x2="38" y2="34" stroke="#90CAF9" stroke-width="2" stroke-linecap="round" stroke-dasharray="2,2"/>`),
+
+  // Row 7
+  sit: sym(`<circle cx="24" cy="10" r="7" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="24" y1="17" x2="24" y2="36" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="25" x2="34" y2="25" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="24" y1="36" x2="24" y2="50" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="24" y1="36" x2="44" y2="36" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="44" y1="36" x2="44" y2="52" stroke="#5a3800" stroke-width="2.5"/>
+    <rect x="12" y="48" width="8" height="6" rx="2" fill="none" stroke="#5a3800" stroke-width="2"/>`),
+
+  stand: sym(`<circle cx="30" cy="10" r="7" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="17" x2="30" y2="40" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="18" y1="27" x2="42" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="40" x2="20" y2="52" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="40" x2="40" y2="52" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="56" x2="46" y2="56" stroke="#5a3800" stroke-width="3" stroke-linecap="round"/>`),
+
+  stop: sym(`<polygon points="18,8 42,8 54,20 54,40 42,52 18,52 6,40 6,20" fill="#FFEBEE" stroke="#C62828" stroke-width="3"/>
+    <text x="30" y="38" font-size="22" fill="#C62828" font-weight="bold" font-family="sans-serif" text-anchor="middle">!</text>`),
+
+  take: sym(`<circle cx="22" cy="12" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="18" x2="22" y2="36" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="25" x2="28" y2="25" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="36" x2="16" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="36" x2="28" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="44" cy="26" r="8" fill="#E8D9A0" stroke="#5a3800" stroke-width="2"/>
+    <line x1="28" y1="28" x2="36" y2="28" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="32" y1="22" x2="28" y2="28" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="32" y1="34" x2="28" y2="28" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>`),
+
+  think: sym(`<circle cx="30" cy="26" r="14" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="24" cy="23" r="2.5" fill="#5a3800"/>
+    <circle cx="36" cy="23" r="2.5" fill="#5a3800"/>
+    <path d="M 23 31 Q 30 37 37 31" fill="none" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="30" cy="46" r="3" fill="#5a3800" opacity="0.4"/>
+    <circle cx="30" cy="52" r="2" fill="#5a3800" opacity="0.3"/>`),
+
+  up: sym(`<line x1="30" y1="52" x2="30" y2="10" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>
+    <line x1="30" y1="10" x2="14" y2="28" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>
+    <line x1="30" y1="10" x2="46" y2="28" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>`),
+
+  down: sym(`<line x1="30" y1="8"  x2="30" y2="50" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>
+    <line x1="30" y1="50" x2="14" y2="32" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>
+    <line x1="30" y1="50" x2="46" y2="32" stroke="#0D47A1" stroke-width="4" stroke-linecap="round"/>`),
+
+  same: sym(`<rect x="10" y="10" width="16" height="16" rx="3" fill="#F5C842" stroke="#5a3800" stroke-width="2"/>
+    <rect x="34" y="34" width="16" height="16" rx="3" fill="#F5C842" stroke="#5a3800" stroke-width="2"/>
+    <line x1="18" y1="26" x2="42" y2="34" stroke="#5a3800" stroke-width="2" stroke-dasharray="3,3"/>`),
+
+  scared: sym(`<circle cx="30" cy="22" r="10" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="24" cy="20" r="2" fill="#5a3800"/>
+    <circle cx="36" cy="20" r="2" fill="#5a3800"/>
+    <path d="M 26 30 Q 28 26 34 30" fill="none" stroke="#5a3800" stroke-width="2"/>
+    <line x1="30" y1="32" x2="30" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="40" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="24" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="36" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="8"  y1="14" x2="14" y2="8"  stroke="#F9A825" stroke-width="2.5"/>
+    <line x1="14" y1="14" x2="8"  y2="8"  stroke="#F9A825" stroke-width="2.5"/>`),
+
+  sick: sym(`<circle cx="30" cy="22" r="10" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 22 20 Q 30 18 38 20" fill="none" stroke="#5a3800" stroke-width="2"/>
+    <path d="M 24 26 Q 30 30 36 26" fill="none" stroke="#5a3800" stroke-width="2"/>
+    <line x1="30" y1="32" x2="30" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="40" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="24" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="36" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 8 28 Q 12 20 16 28 Q 20 36 24 28" fill="none" stroke="#A5D6A7" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  // Row 8
+  turn: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="27" x2="30" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="42" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="42" y1="20" x2="42" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="34" y1="27" x2="50" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="42" y1="38" x2="36" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="42" y1="38" x2="48" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 28 14 Q 32 10 36 14" fill="none" stroke="#F5C842" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  wait: sym(`<circle cx="30" cy="30" r="22" fill="#EF4444"/>
+    <text x="30" y="38" font-size="18" fill="white" font-weight="bold" font-family="sans-serif" text-anchor="middle">wait</text>`),
+
+  want: sym(`<circle cx="30" cy="16" r="8" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="24" x2="30" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="18" y1="34" x2="30" y2="28" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="22" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="46" x2="38" y2="56" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 42 32 A 9 9 0 0 1 42 14" fill="none" stroke="#F48FB1" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="42" y1="12" x2="42" y2="22" stroke="#5a3800" stroke-width="2" stroke-dasharray="2,2"/>`),
+
+  watch: sym(`<rect x="10" y="14" width="40" height="28" rx="4" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="30" cy="28" r="8" fill="none" stroke="#5a3800" stroke-width="2"/>
+    <line x1="30" y1="22" x2="30" y2="28" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="30" y1="28" x2="36" y2="32" stroke="#5a3800" stroke-width="1.5" stroke-linecap="round"/>
+    <circle cx="14" cy="10" r="3" fill="#5a3800" opacity="0.4"/>
+    <circle cx="46" cy="10" r="3" fill="#5a3800" opacity="0.4"/>`),
+
+  work: sym(`<circle cx="22" cy="12" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="18" x2="22" y2="36" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="25" x2="30" y2="25" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="36" x2="16" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="36" x2="28" y2="46" stroke="#5a3800" stroke-width="2.5"/>
+    <rect x="32" y="18" width="22" height="30" rx="3" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="36" y1="24" x2="50" y2="24" stroke="#5a3800" stroke-width="1.5"/>
+    <line x1="36" y1="30" x2="50" y2="30" stroke="#5a3800" stroke-width="1.5"/>
+    <line x1="36" y1="36" x2="44" y2="36" stroke="#5a3800" stroke-width="1.5"/>`),
+
+  on: sym(`<rect x="14" y="14" width="32" height="32" rx="4" fill="none" stroke="#0D47A1" stroke-width="3"/>
+    <circle cx="30" cy="30" r="5" fill="#EF9A9A"/>
+    <line x1="30" y1="5"  x2="30" y2="14" stroke="#0D47A1" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="30" y1="5" x2="26" y2="9" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>
+    <line x1="30" y1="5" x2="34" y2="9" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>`),
+
+  off: sym(`<rect x="14" y="14" width="32" height="32" rx="4" fill="none" stroke="#0D47A1" stroke-width="3"/>
+    <circle cx="30" cy="30" r="5" fill="#EF9A9A"/>
+    <line x1="30" y1="46" x2="30" y2="55" stroke="#0D47A1" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="30" y1="55" x2="26" y2="51" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>
+    <line x1="30" y1="55" x2="34" y2="51" stroke="#0D47A1" stroke-width="2" stroke-linecap="round"/>`),
+
+  silly: sym(`<circle cx="30" cy="20" r="10" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <circle cx="24" cy="18" r="2" fill="#5a3800"/>
+    <circle cx="36" cy="18" r="2" fill="#5a3800"/>
+    <path d="M 22 26 Q 26 32 30 26 Q 34 22 38 26" fill="none" stroke="#5a3800" stroke-width="2" stroke-linecap="round"/>
+    <line x1="30" y1="30" x2="30" y2="44" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="20" y1="38" x2="40" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="24" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="30" y1="44" x2="36" y2="54" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 40 12 Q 44 8 48 12" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M 12 12 Q 16 8 20 12" fill="none" stroke="#F9A825" stroke-width="2.5" stroke-linecap="round"/>`),
+
+  slow: sym(`<circle cx="22" cy="14" r="6" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="20" x2="22" y2="38" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="14" y1="27" x2="28" y2="27" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="16" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="22" y1="38" x2="28" y2="48" stroke="#5a3800" stroke-width="2.5"/>
+    <path d="M 34 28 Q 40 20 50 28" fill="none" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <circle cx="50" cy="28" r="4" fill="#90CAF9" stroke="#1565C0" stroke-width="1.5"/>`),
+
+  brk: sym(`<text x="30" y="36" font-size="15" fill="#7a5800" font-weight="bold" font-family="sans-serif" text-anchor="middle">break</text>`),
+
+  toilet: sym(`<path d="M 22 10 L 22 24 Q 22 36 30 36 Q 38 36 38 24 L 38 10" fill="none" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="18" y1="10" x2="42" y2="10" stroke="#5a3800" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="20" y="36" width="20" height="16" rx="3" fill="none" stroke="#5a3800" stroke-width="2.5"/>
+    <line x1="28" y1="52" x2="26" y2="56" stroke="#5a3800" stroke-width="2"/>
+    <line x1="32" y1="52" x2="34" y2="56" stroke="#5a3800" stroke-width="2"/>`)
+};
+
+/* ── CELL DEFINITIONS ──────────────────────────────────────────────────────── */
+const CELLS=[
+  // Row 1
+  {id:'I',       label:'I',          sym:'I',       color:'yellow', speak:'I'},
+  {id:'it',      label:'it',         sym:'it',      color:'yellow', speak:'it'},
+  {id:'who',     label:'who',        sym:'who',     color:'pink',   speak:'who'},
+  {id:'what',    label:'what',       sym:'what',    color:'pink',   speak:'what'},
+  {id:'when',    label:'when',       sym:'when',    color:'pink',   speak:'when'},
+  {id:'how',     label:'how',        sym:'how',     color:'pink',   speak:'how'},
+  {id:'howmuch', label:'how much',   sym:'howmuch', color:'pink',   speak:'how much'},
+  {id:'all',     label:'all',        sym:'all',     color:'cream',  speak:'all'},
+  {id:'that',    label:'that',       sym:'that',    color:'green',  speak:'that'},
+  {id:'this',    label:'this',       sym:'this',    color:'green',  speak:'this'},
+  // Row 2
+  {id:'me',      label:'me',         sym:'me',      color:'yellow', speak:'me'},
+  {id:'mymine',  label:'my-mine',    sym:'mymine',  color:'yellow', speak:'my'},
+  {id:'notdont', label:"not-don't",  sym:'notdont', color:'red',    speak:"don't"},
+  {id:'amis',    label:'am-is-are',  sym:'amis',    color:'cream',  speak:'am'},
+  {id:'again',   label:'again',      sym:'again',   color:'cream',  speak:'again'},
+  {id:'now',     label:'now',        sym:'now',     color:'cream',  speak:'now'},
+  {id:'gone',    label:'gone',       sym:'gone',    color:'cream',  speak:'gone'},
+  {id:'some',    label:'some',       sym:'some',    color:'cream',  speak:'some'},
+  {id:'bad',     label:'bad',        sym:'bad',     color:'cream',  speak:'bad'},
+  {id:'big',     label:'big',        sym:'big',     color:'cream',  speak:'big'},
+  // Row 3
+  {id:'youyour', label:'you-your',   sym:'youyour', color:'yellow', speak:'you'},
+  {id:'come',    label:'come',       sym:'come',    color:'cream',  speak:'come'},
+  {id:'dododid', label:'do-does-did',sym:'dododid', color:'cream',  speak:'do'},
+  {id:'drink',   label:'drink',      sym:'drink',   color:'cream',  speak:'drink'},
+  {id:'latelater',label:'late-later',sym:'latelater',color:'cream', speak:'late'},
+  {id:'ready',   label:'ready',      sym:'ready',   color:'cream',  speak:'ready'},
+  {id:'more',    label:'more',       sym:'more',    color:'cream',  speak:'more'},
+  {id:'finished',label:'finished',   sym:'finished',color:'cream',  speak:'finished'},
+  {id:'clean',   label:'clean',      sym:'clean',   color:'cream',  speak:'clean'},
+  {id:'cold',    label:'cold',       sym:'cold',    color:'cream',  speak:'cold'},
+  // Row 4
+  {id:'eat',     label:'eat',        sym:'eat',     color:'cream',  speak:'eat'},
+  {id:'feel',    label:'feel',       sym:'feel',    color:'cream',  speak:'feel'},
+  {id:'get',     label:'get',        sym:'get',     color:'cream',  speak:'get'},
+  {id:'give',    label:'give',       sym:'give',    color:'cream',  speak:'give'},
+  {id:'gowent',  label:'go-went',    sym:'gowent',  color:'cream',  speak:'go'},
+  {id:'where',   label:'where',      sym:'where',   color:'pink',   speak:'where'},
+  {id:'away',    label:'away',       sym:'away',    color:'blue',   speak:'away'},
+  {id:'different',label:'different', sym:'different',color:'cream', speak:'different'},
+  {id:'dirty',   label:'dirty',      sym:'dirty',   color:'cream',  speak:'dirty'},
+  {id:'fast',    label:'fast',       sym:'fast',    color:'cream',  speak:'fast'},
+  // Row 5
+  {id:'hearlisten',label:'hear-listen',sym:'hearlisten',color:'cream',speak:'listen'},
+  {id:'help',    label:'help',       sym:'help',    color:'cream',  speak:'help'},
+  {id:'like',    label:'like',       sym:'like',    color:'cream',  speak:'like'},
+  {id:'looksee', label:'look-see',   sym:'looksee', color:'cream',  speak:'look'},
+  {id:'make',    label:'make',       sym:'make',    color:'cream',  speak:'make'},
+  {id:'here',    label:'here',       sym:'here',    color:'blue',   speak:'here'},
+  {id:'there',   label:'there',      sym:'there',   color:'blue',   speak:'there'},
+  {id:'good',    label:'good',       sym:'good',    color:'cream',  speak:'good'},
+  {id:'happy',   label:'happy',      sym:'happy',   color:'cream',  speak:'happy'},
+  {id:'hot',     label:'hot',        sym:'hot',     color:'cream',  speak:'hot'},
+  // Row 6
+  {id:'openclose',label:'open-close',sym:'openclose',color:'cream', speak:'open'},
+  {id:'play',    label:'play',       sym:'play',    color:'cream',  speak:'play'},
+  {id:'put',     label:'put',        sym:'put',     color:'cream',  speak:'put'},
+  {id:'read',    label:'read',       sym:'read',    color:'cream',  speak:'read'},
+  {id:'saytell', label:'say-tell',   sym:'saytell', color:'cream',  speak:'say'},
+  {id:'in',      label:'in',         sym:'in',      color:'blue',   speak:'in'},
+  {id:'out',     label:'out',        sym:'out',     color:'blue',   speak:'out'},
+  {id:'hurt',    label:'hurt',       sym:'hurt',    color:'cream',  speak:'hurt'},
+  {id:'little',  label:'little',     sym:'little',  color:'cream',  speak:'little'},
+  {id:'sad',     label:'sad',        sym:'sad',     color:'cream',  speak:'sad'},
+  // Row 7
+  {id:'sit',     label:'sit',        sym:'sit',     color:'cream',  speak:'sit'},
+  {id:'stand',   label:'stand',      sym:'stand',   color:'cream',  speak:'stand'},
+  {id:'stop',    label:'stop',       sym:'stop',    color:'red',    speak:'stop'},
+  {id:'take',    label:'take',       sym:'take',    color:'cream',  speak:'take'},
+  {id:'think',   label:'think',      sym:'think',   color:'cream',  speak:'think'},
+  {id:'up',      label:'up',         sym:'up',      color:'blue',   speak:'up'},
+  {id:'down',    label:'down',       sym:'down',    color:'blue',   speak:'down'},
+  {id:'same',    label:'same',       sym:'same',    color:'cream',  speak:'same'},
+  {id:'scared',  label:'scared',     sym:'scared',  color:'cream',  speak:'scared'},
+  {id:'sick',    label:'sick',       sym:'sick',    color:'cream',  speak:'sick'},
+  // Row 8
+  {id:'turn',    label:'turn',       sym:'turn',    color:'green',  speak:'turn'},
+  {id:'wait',    label:'wait',       sym:'wait',    color:'red',    speak:'wait'},
+  {id:'want',    label:'want',       sym:'want',    color:'cream',  speak:'want'},
+  {id:'watch',   label:'watch',      sym:'watch',   color:'cream',  speak:'watch'},
+  {id:'work',    label:'work',       sym:'work',    color:'cream',  speak:'work'},
+  {id:'on',      label:'on',         sym:'on',      color:'blue',   speak:'on'},
+  {id:'off',     label:'off',        sym:'off',     color:'blue',   speak:'off'},
+  {id:'silly',   label:'silly',      sym:'silly',   color:'cream',  speak:'silly'},
+  {id:'slow',    label:'slow',       sym:'slow',    color:'cream',  speak:'slow'},
+  {id:'brk',     label:'break',      sym:'brk',     color:'yellow', speak:'break'},
+  {id:'toilet',  label:'toilet',     sym:'toilet',  color:'blue',   speak:'toilet'},
+];
+
+/* ── BUILD BOARD ──────────────────────────────────────────────────────────── */
+const board=document.getElementById('board');
+CELLS.forEach(cell=>{
+  const btn=document.createElement('button');
+  btn.className=`cell c-${cell.color}`;
+  btn.setAttribute('tabindex','0');
+  btn.setAttribute('role','gridcell');
+  btn.setAttribute('aria-label',cell.label);
+  btn.innerHTML=`<div class="cell-sym">${S[cell.sym]||''}</div><div class="cell-label">${cell.label}</div>`;
+  btn.addEventListener('click',()=>handleCell(cell,btn));
+  btn.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();handleCell(cell,btn);}});
+  board.appendChild(btn);
+});
+
+/* ── INTERACTION ──────────────────────────────────────────────────────────── */
+function handleCell(cell,btn){
+  sentence.push(cell);
+  renderSentence();
+  btn.classList.remove('flash');
+  void btn.offsetWidth;
+  btn.classList.add('flash');
+  if(!muted)speakWord(cell.speak);
+}
+
+function renderSentence(){
+  const chips=document.getElementById('sentenceChips');
+  const ph=document.getElementById('sentPlaceholder');
+  chips.innerHTML='';
+  if(sentence.length===0){
+    const sp=document.createElement('span');
+    sp.className='sentence-placeholder';
+    sp.id='sentPlaceholder';
+    sp.textContent='Tap a word to start your sentence...';
+    chips.appendChild(sp);
+    return;
+  }
+  sentence.forEach((c,i)=>{
+    const chip=document.createElement('button');
+    chip.className=`schip cc-${c.color}`;
+    chip.setAttribute('aria-label',`Remove ${c.label}`);
+    chip.innerHTML=`${c.label}<span class="cx" aria-hidden="true">✕</span>`;
+    chip.onclick=()=>{sentence.splice(i,1);renderSentence();};
+    chips.appendChild(chip);
+  });
+}
+
+function speakWord(text){
+  if(muted||!synth)return;
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.9;u.pitch=1.05;
+  synth.speak(u);
+}
+
+function speakSentence(){
+  if(sentence.length===0)return;
+  const text=sentence.map(c=>c.speak).join(' ');
+  if(muted){alert('Sound is muted. Press "Sound on" to enable.');return;}
+  synth.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.85;u.pitch=1.0;
+  const btn=document.getElementById('speakBtn');
+  btn.classList.add('speaking');
+  u.onend=()=>btn.classList.remove('speaking');
+  synth.speak(u);
+}
+
+function removeLastWord(){
+  if(sentence.length>0){sentence.pop();renderSentence();}
+}
+
+function clearSentence(){
+  sentence=[];
+  renderSentence();
+}
+
+function toggleMute(){
+  muted=!muted;
+  const btn=document.getElementById('muteBtn');
+  btn.textContent=muted?'🔇 Sound off':'🔊 Sound on';
+  btn.setAttribute('aria-pressed',muted.toString());
+  btn.classList.toggle('muted',muted);
+  if(muted)synth&&synth.cancel();
+}
+
+function exportSentence(){
+  if(sentence.length===0){alert('Build a sentence first!');return;}
+  const text=sentence.map(c=>c.label).join(' ');
+  const blob=new Blob([`Phoenix College Coreboard\n=========================\n\n${text}\n\nExported: ${new Date().toLocaleString()}`],{type:'text/plain'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='my_sentence.txt';
+  a.click();
+}
+
+function showHelp(){
+  document.getElementById('helpModal').style.display='flex';
+}
+
+document.getElementById('helpModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('helpModal'))
+    document.getElementById('helpModal').style.display='none';
+});
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')document.getElementById('helpModal').style.display='none';
+});
+</script>
+</body>
+</html>

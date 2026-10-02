@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Our Trip to Grove Hall Park</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --sky:#8FD6F0;
+    --sky-deep:#4FA9D6;
+    --grass:#6DBE45;
+    --grass-deep:#4E9430;
+    --sun:#FFD23F;
+    --sun-deep:#F5A623;
+    --bark:#8B5E34;
+    --ink:#123152;
+    --white:#FFFFFF;
+    --card:#FFFDF6;
+    --wrong:#E85C4A;
+    --wrong-deep:#B8402F;
+    --radius:28px;
+  }
+  * { box-sizing: border-box; }
+  html,body{
+    margin:0; padding:0; min-height:100%;
+    font-family: "Comic Sans MS", "Segoe UI Rounded", "Trebuchet MS", Verdana, sans-serif;
+    background: linear-gradient(180deg, var(--sky) 0%, var(--sky) 45%, var(--grass) 45%, var(--grass-deep) 100%);
+    color: var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+  }
+  button{ font-family:inherit; cursor:pointer; }
+  button:focus-visible, input:focus-visible, a:focus-visible{
+    outline: 5px solid #1B3B5F; outline-offset: 4px;
+  }
+  .sun{
+    position:fixed; top:18px; right:22px; font-size:3.2rem;
+    filter: drop-shadow(0 4px 6px rgba(0,0,0,.15));
+    animation: spin 12s linear infinite;
+    pointer-events:none; z-index:0;
+  }
+  @keyframes spin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
+  .cloud{ position:fixed; font-size:2.4rem; opacity:.85; pointer-events:none; z-index:0; animation: float 18s linear infinite; }
+  .cloud.c1{ top:6%; left:-10%; animation-duration: 26s; }
+  .cloud.c2{ top:16%; left:-10%; animation-duration: 34s; animation-delay: 6s; font-size:1.8rem; }
+  @keyframes float{ from{ transform: translateX(-10vw);} to{ transform: translateX(120vw);} }
+
+  .wrap{
+    position:relative; z-index:1;
+    max-width: 760px; margin: 0 auto; padding: 20px 18px 60px;
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+
+  .topbar{
+    display:flex; justify-content:space-between; align-items:center;
+    gap:10px; margin-bottom:14px; flex-wrap:wrap;
+  }
+  .pill{
+    background: var(--white); border:4px solid var(--ink);
+    border-radius: 999px; padding:10px 18px;
+    font-weight:800; font-size:1.25rem; display:flex; align-items:center; gap:8px;
+    box-shadow: 0 4px 0 rgba(0,0,0,.15);
+  }
+
+  .card{
+    background: var(--card); border:5px solid var(--ink);
+    border-radius: var(--radius); padding: 28px 24px;
+    box-shadow: 0 10px 0 rgba(0,0,0,.12);
+    text-align:center;
+  }
+
+  h1{ font-size:2.1rem; line-height:1.15; margin:.2em 0; }
+  h2{ font-size:1.8rem; margin:.2em 0 .4em; }
+  .big-emoji{ font-size:5.5rem; margin:.1em 0; line-height:1; }
+  .lead{ font-size:1.35rem; font-weight:600; margin:.4em 0 1em; }
+
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px;
+    font-size:1.5rem; font-weight:800; color:var(--white);
+    background: var(--grass-deep); border:4px solid var(--ink);
+    border-radius: 22px; padding: 20px 26px; margin:10px 6px;
+    box-shadow: 0 6px 0 #2f5f1e; min-width: 220px;
+    transition: transform .08s ease;
+  }
+  .btn:active{ transform: translateY(4px); box-shadow: 0 2px 0 #2f5f1e; }
+  .btn.secondary{ background: var(--sky-deep); box-shadow: 0 6px 0 #2b6f92; }
+  .btn.secondary:active{ box-shadow: 0 2px 0 #2b6f92; }
+  .btn.warm{ background: var(--sun-deep); box-shadow: 0 6px 0 #a86e10; color:var(--ink); }
+  .btn.warm:active{ box-shadow: 0 2px 0 #a86e10; }
+  .btn.ghost{ background: var(--white); color:var(--ink); box-shadow: 0 6px 0 #cfcfcf; }
+  .btn.ghost:active{ box-shadow: 0 2px 0 #cfcfcf; }
+  .btn:disabled{ opacity:.55; cursor:default; }
+
+  .speak-btn{
+    background:none; border:4px solid var(--ink); border-radius:999px;
+    width:70px; height:70px; font-size:2rem; display:flex; align-items:center; justify-content:center;
+    margin: 6px auto 14px; box-shadow: 0 5px 0 rgba(0,0,0,.15);
+  }
+  .speak-btn:active{ transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,.15); }
+
+  .progress-wrap{
+    background: var(--white); border:4px solid var(--ink); border-radius: 999px;
+    height: 26px; overflow:hidden; margin: 6px 0 18px;
+  }
+  .progress-bar{
+    height:100%; background: linear-gradient(90deg, var(--sun), var(--sun-deep));
+    width:0%; transition: width .4s ease;
+  }
+
+  .options{ display:flex; flex-direction:column; gap:16px; margin-top: 6px; }
+  .opt{
+    display:flex; align-items:center; gap:16px; text-align:left;
+    font-size:1.55rem; font-weight:700; color:var(--ink);
+    background: var(--white); border:4px solid var(--ink); border-radius:22px;
+    padding:18px 20px; box-shadow: 0 6px 0 #d8d3c2;
+    transition: transform .08s ease, background .15s ease;
+  }
+  .opt:active{ transform: translateY(4px); box-shadow: 0 2px 0 #d8d3c2; }
+  .opt .oe{ font-size:2.4rem; flex-shrink:0; }
+  .opt.correct{ background:#DDF3CE; border-color: var(--grass-deep); box-shadow: 0 6px 0 var(--grass-deep); }
+  .opt.wrong{ background:#FBDAD4; border-color: var(--wrong-deep); box-shadow: 0 6px 0 var(--wrong-deep); }
+  .opt[disabled]{ opacity: 1; }
+
+  .feedback{
+    font-size:1.4rem; font-weight:800; margin: 14px 0 4px; min-height: 1.6em;
+  }
+  .feedback.good{ color: var(--grass-deep); }
+  .feedback.bad{ color: var(--wrong-deep); }
+
+  .stars-row{ font-size:2.2rem; margin: 8px 0; }
+  .pop{ animation: pop .5s ease; }
+  @keyframes pop{ 0%{transform:scale(1)} 40%{transform:scale(1.35)} 100%{transform:scale(1)} }
+
+  .confetti-layer{ position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:5; }
+  .confetti{
+    position:absolute; top:-10%; font-size:1.8rem; animation: fall linear forwards;
+  }
+  @keyframes fall{ to{ transform: translateY(115vh) rotate(360deg); opacity: .9; } }
+
+  .hidden{ display:none !important; }
+
+  .name-field{
+    font-size:1.4rem; padding:14px 16px; width:100%; max-width:420px;
+    border:4px solid var(--ink); border-radius:16px; margin: 10px 0 4px; text-align:center;
+    font-family:inherit;
+  }
+
+  .links{ text-align:left; margin-top: 18px; }
+  .links h3{ font-size:1.3rem; margin-bottom:8px; }
+  .links a{
+    display:block; background:var(--white); border:3px solid var(--ink);
+    border-radius:16px; padding:12px 16px; margin-bottom:10px; color:var(--ink);
+    text-decoration:none; font-weight:700; font-size:1.05rem;
+  }
+  .links a:hover{ background:#EFF7FF; }
+
+  .footer-note{ font-size:1rem; color:#245; margin-top:18px; opacity:.85; }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
+  }
+
+  @media (max-width:480px){
+    .big-emoji{ font-size:4.2rem; }
+    h1{ font-size:1.7rem; }
+    .btn{ font-size:1.25rem; min-width: 0; width:100%; }
+    .opt{ font-size:1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sun" aria-hidden="true">☀️</div>
+<div class="cloud c1" aria-hidden="true">☁️</div>
+<div class="cloud c2" aria-hidden="true">☁️</div>
+<div id="confettiLayer" class="confetti-layer" aria-hidden="true"></div>
+
+<div class="wrap">
+
+  <div class="topbar" role="status" aria-live="off">
+    <div class="pill">⭐ <span id="scoreLabel">0 / 20</span></div>
+    <div class="pill">⏱️ <span id="timerLabel">00:00</span></div>
+  </div>
+
+  <div id="app" class="card" aria-live="polite"></div>
+
+  <p class="footer-note">Phoenix College · Local Offer Travel Training · Grove Hall Park</p>
+</div>
+
+<div id="ariaAnnounce" class="sr-only" aria-live="assertive"></div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const QUESTIONS = [
+  { q:"Where are we going today?", emoji:"🏞️🌳", say:"Where are we going today?",
+    opts:[["🏞️","Grove Hall Park",true],["🏖️","The Beach",false],["🦁","The Zoo",false]] },
+  { q:"Where do we start our trip?", emoji:"⛪", say:"Where do we start our trip?",
+    opts:[["⛪","Bow Church",true],["✈️","The Airport",false],["🏥","The Hospital",false]] },
+  { q:"How do we travel to the park?", emoji:"🚶‍♂️🚶‍♀️", say:"How do we travel to the park?",
+    opts:[["🚶","We Walk",true],["✈️","We Fly",false],["🏊","We Swim",false]] },
+  { q:"Is the park close to Bow Church?", emoji:"📍", say:"Is the park close to Bow Church?",
+    opts:[["👍","Yes, very close",true],["👎","No, very far away",false]] },
+  { q:"On a bus or train, what do we use to pay?", emoji:"🎫", say:"On a bus or train, what do we use to pay?",
+    opts:[["🎫","Freedom Pass",true],["💰","Coins only",false],["❌","Nothing works",false]] },
+  { q:"What is Grove Hall Park?", emoji:"🏞️", say:"What is Grove Hall Park?",
+    opts:[["🏞️","A Park",true],["🏪","A Shop",false],["🏫","A School",false]] },
+  { q:"What can we do at the park?", emoji:"😊", say:"What can we do at the park?",
+    opts:[["⚽","Play",true],["😴","Sleep",false],["🍳","Cook",false]] },
+  { q:"What can we play on at the park?", emoji:"🛝", say:"What can we play on at the park?",
+    opts:[["🛝","Swings and a Playground",true],["🏊","A Swimming Pool",false],["🎬","A Cinema",false]] },
+  { q:"What colour is the grass?", emoji:"🌱", say:"What colour is the grass?",
+    opts:[["🟢","Green",true],["🟣","Purple",false],["🔵","Blue",false]] },
+  { q:"Is there a garden in the park?", emoji:"🌷", say:"Is there a garden in the park?",
+    opts:[["✅","Yes",true],["❌","No",false]] },
+  { q:"Before we cross the road, what do we do?", emoji:"🚦", say:"Before we cross the road, what do we do?",
+    opts:[["🛑👀","Stop and Look",true],["🏃","Run Fast",false],["🙈","Close our Eyes",false]] },
+  { q:"Who do we stay with on our trip?", emoji:"👥", say:"Who do we stay with on our trip?",
+    opts:[["👥","Our Group and Staff",true],["🚶‍♂️","A Stranger",false],["🚫","No One",false]] },
+  { q:"What is next to the park?", emoji:"🖼️", say:"What is next to the park?",
+    opts:[["🖼️","An Art Gallery",true],["🚉","A Train Station",false],["🐄","A Farm",false]] },
+  { q:"Can we get a snack near the park?", emoji:"☕", say:"Can we get a snack near the park?",
+    opts:[["☕","Yes, at the café",true],["❌","No snacks anywhere",false]] },
+  { q:"What do we wear if it is raining?", emoji:"🌧️", say:"What do we wear if it is raining?",
+    opts:[["🧥","A Coat",true],["🩳","Swimming Clothes",false],["❌","Nothing",false]] },
+  { q:"What do we bring with us?", emoji:"🎒", say:"What do we bring with us?",
+    opts:[["🎒🎫","Our Bag and Pass",true],["❌","Nothing",false],["⚽","A Football Only",false]] },
+  { q:"Is the park inside or outside?", emoji:"🌤️", say:"Is the park inside or outside?",
+    opts:[["🌤️","Outside",true],["🏠","Inside",false]] },
+  { q:"If we feel worried, what do we do?", emoji:"🙋", say:"If we feel worried, what do we do?",
+    opts:[["🙋","Tell a Member of Staff",true],["🏃","Run Away",false],["🙈","Hide",false]] },
+  { q:"What do we do with our rubbish?", emoji:"🗑️", say:"What do we do with our rubbish?",
+    opts:[["🗑️","Put it in the Bin",true],["🚯","Drop it on the Floor",false]] },
+  { q:"Is the park free to visit?", emoji:"💷", say:"Is the park free to visit?",
+    opts:[["✅","Yes, it's free",true],["💷","We must pay a lot",false]] },
+];
+
+/* ---------------- STATE ---------------- */
+let current = -1; // -1 = start screen
+let score = 0;
+let answered = false;
+let studentName = "";
+let timerSeconds = 0;
+let timerHandle = null;
+let answersLog = []; // {q, chosen, correct}
+
+const app = document.getElementById('app');
+const scoreLabel = document.getElementById('scoreLabel');
+const timerLabel = document.getElementById('timerLabel');
+const announce = document.getElementById('ariaAnnounce');
+
+/* ---------------- SPEECH ---------------- */
+function speak(text){
+  try{
+    if(!('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'en-GB';
+    u.rate = 0.85;
+    u.pitch = 1.05;
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------------- TIMER ---------------- */
+function startTimer(){
+  stopTimer();
+  timerSeconds = 0;
+  timerHandle = setInterval(()=>{
+    timerSeconds++;
+    const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
+    const s = String(timerSeconds%60).padStart(2,'0');
+    timerLabel.textContent = m+":"+s;
+  },1000);
+}
+function stopTimer(){ if(timerHandle){ clearInterval(timerHandle); timerHandle=null; } }
+
+/* ---------------- CONFETTI ---------------- */
+function confettiBurst(count){
+  const layer = document.getElementById('confettiLayer');
+  const bits = ["🎉","⭐","🎈","🌟","🏞️","💛","🟢"];
+  for(let i=0;i<count;i++){
+    const el = document.createElement('span');
+    el.className='confetti';
+    el.textContent = bits[Math.floor(Math.random()*bits.length)];
+    el.style.left = (Math.random()*100)+'vw';
+    el.style.fontSize = (1.2+Math.random()*1.6)+'rem';
+    const dur = 2.2 + Math.random()*2.2;
+    el.style.animationDuration = dur+'s';
+    layer.appendChild(el);
+    setTimeout(()=>el.remove(), dur*1000+200);
+  }
+}
+
+/* ---------------- RENDER: START ---------------- */
+function renderStart(){
+  app.innerHTML = `
+    <div class="big-emoji">🌳🏞️🚶</div>
+    <h1>Our Trip to Grove Hall Park</h1>
+    <p class="lead">Let's learn about our trip from Bow Church!</p>
+    <button class="speak-btn" id="speakIntro" aria-label="Hear the introduction">🔊</button>
+    <p style="font-size:1.15rem; font-weight:600;">What is your name?<br><span style="font-weight:400; font-size:.95rem;">(This is optional)</span></p>
+    <input type="text" id="nameInput" class="name-field" placeholder="Type your name here" aria-label="Your name" />
+    <div style="margin-top:18px;">
+      <button class="btn" id="startBtn">▶️ Start the Quiz</button>
+    </div>
+  `;
+  document.getElementById('speakIntro').onclick = ()=> speak("Our trip to Grove Hall Park. Let's learn about our trip from Bow Church. There are twenty questions. Press Start when you are ready.");
+  document.getElementById('startBtn').onclick = ()=>{
+    studentName = document.getElementById('nameInput').value.trim();
+    current = 0; score = 0; answersLog = [];
+    scoreLabel.textContent = "0 / "+QUESTIONS.length;
+    startTimer();
+    renderQuestion();
+  };
+  speak("Our trip to Grove Hall Park. Let's learn about our trip from Bow Church.");
+}
+
+/* ---------------- RENDER: QUESTION ---------------- */
+function renderQuestion(){
+  answered = false;
+  const item = QUESTIONS[current];
+  const pct = Math.round((current/QUESTIONS.length)*100);
+
+  app.innerHTML = `
+    <p style="font-weight:800; font-size:1.05rem; margin:0 0 6px;">Question ${current+1} of ${QUESTIONS.length}</p>
+    <div class="progress-wrap"><div class="progress-bar" id="progBar" style="width:${pct}%"></div></div>
+    <div class="big-emoji">${item.emoji}</div>
+    <h2>${item.q}</h2>
+    <button class="speak-btn" id="speakQ" aria-label="Hear the question again">🔊</button>
+    <div class="options" id="optionsWrap"></div>
+    <p class="feedback" id="feedback"></p>
+    <button class="btn secondary hidden" id="nextBtn">Next ➡️</button>
+  `;
+
+  const wrap = document.getElementById('optionsWrap');
+  item.opts.forEach((opt, idx)=>{
+    const [emo, label, isCorrect] = opt;
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.setAttribute('aria-label', label);
+    b.innerHTML = `<span class="oe">${emo}</span><span>${label}</span>`;
+    b.onclick = ()=> handleAnswer(b, idx, isCorrect, label);
+    wrap.appendChild(b);
+  });
+
+  document.getElementById('speakQ').onclick = ()=> speak(item.say);
+  document.getElementById('nextBtn').onclick = goNext;
+
+  announce.textContent = `Question ${current+1} of ${QUESTIONS.length}. ${item.q}`;
+  speak(item.say);
+}
+
+function handleAnswer(btn, idx, isCorrect, label){
+  if(answered) return;
+  answered = true;
+  const item = QUESTIONS[current];
+  const allOpts = document.querySelectorAll('.opt');
+  allOpts.forEach(b=> b.disabled = true);
+
+  const fb = document.getElementById('feedback');
+  if(isCorrect){
+    btn.classList.add('correct');
+    fb.textContent = "✅ Well done! That's right!";
+    fb.className = 'feedback good';
+    score++;
+    scoreLabel.textContent = score+" / "+QUESTIONS.length;
+    scoreLabel.parentElement.classList.add('pop');
+    setTimeout(()=>scoreLabel.parentElement.classList.remove('pop'), 500);
+    confettiBurst(14);
+    speak("Well done! That's right!");
+  }else{
+    btn.classList.add('wrong');
+    const correctBtn = [...allOpts].find(b => item.opts[[...allOpts].indexOf(b)][2]);
+    if(correctBtn) correctBtn.classList.add('correct');
+    fb.textContent = "That's okay! The right answer is shown in green.";
+    fb.className = 'feedback bad';
+    speak("Good try! The correct answer is " + item.opts.find(o=>o[2])[1]);
+  }
+  answersLog.push({q:item.q, chosen:label, correct:isCorrect});
+  document.getElementById('nextBtn').classList.remove('hidden');
+}
+
+function goNext(){
+  current++;
+  if(current >= QUESTIONS.length){
+    stopTimer();
+    renderSummary();
+  }else{
+    renderQuestion();
+  }
+}
+
+/* ---------------- RENDER: SUMMARY ---------------- */
+function renderSummary(){
+  const total = QUESTIONS.length;
+  const pct = Math.round((score/total)*100);
+  const m = String(Math.floor(timerSeconds/60)).padStart(2,'0');
+  const s = String(timerSeconds%60).padStart(2,'0');
+  let stars = "";
+  const starCount = Math.max(1, Math.round((score/total)*5));
+  for(let i=0;i<5;i++) stars += (i<starCount ? "⭐" : "☆");
+
+  let praise = "Great effort!";
+  if(pct >= 80) praise = "Amazing job!";
+  else if(pct >= 50) praise = "Well done!";
+
+  app.innerHTML = `
+    <div id="summaryCard">
+      <div class="big-emoji">🎉🏞️🎉</div>
+      <h1>${praise}</h1>
+      ${studentName ? `<p class="lead">${studentName}</p>` : ``}
+      <p class="lead">You finished the Grove Hall Park quiz!</p>
+      <div class="stars-row">${stars}</div>
+      <p style="font-size:1.6rem; font-weight:800;">Score: ${score} / ${total}</p>
+      <p style="font-size:1.15rem;">⏱️ Time taken: ${m}:${s}</p>
+      <button class="speak-btn" id="speakSummary" aria-label="Hear my results">🔊</button>
+    </div>
+
+    <div style="margin-top:18px;">
+      <button class="btn" id="pdfBtn">📄 Download PDF</button>
+      <button class="btn warm" id="shotBtn">📷 Take a Screenshot</button>
+      <button class="btn ghost" id="againBtn">🔄 Try Again</button>
+    </div>
+    <p class="footer-note">Tip: you can also press your device's screenshot buttons to save this page!</p>
+
+    <div class="links">
+      <h3>🔎 Learn more about our trip</h3>
+      <a href="https://www.towerhamlets.gov.uk/lgnl/leisure_and_culture/parks_and_open_spaces/a_-_z_of_parks.aspx" target="_blank" rel="noopener">🏞️ Tower Hamlets Parks — Grove Hall Park</a>
+      <a href="https://tfl.gov.uk/plan-a-journey/" target="_blank" rel="noopener">🗺️ TfL Journey Planner</a>
+      <a href="https://www.freedompass.org/" target="_blank" rel="noopener">🎫 About the Freedom Pass</a>
+      <a href="https://www.bowarts.org/" target="_blank" rel="noopener">🖼️ Nunnery Gallery / Bow Arts</a>
+    </div>
+  `;
+
+  confettiBurst(28);
+  const summaryText = `${praise} You scored ${score} out of ${total}. Great work learning about Grove Hall Park.`;
+  speak(summaryText);
+  document.getElementById('speakSummary').onclick = ()=> speak(summaryText);
+
+  document.getElementById('againBtn').onclick = ()=>{
+    current = -1; score = 0; answered = false; answersLog = [];
+    stopTimer();
+    timerLabel.textContent = "00:00";
+    scoreLabel.textContent = "0 / "+QUESTIONS.length;
+    renderStart();
+  };
+
+  document.getElementById('shotBtn').onclick = ()=>{
+    const target = document.getElementById('summaryCard');
+    html2canvas(target, {backgroundColor:"#FFFDF6", scale:2}).then(canvas=>{
+      const link = document.createElement('a');
+      link.download = 'grove-hall-park-quiz-result.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    });
+  };
+
+  document.getElementById('pdfBtn').onclick = ()=>{
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit:'pt', format:'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    let y = 90;
+
+    doc.setFillColor(143, 214, 240);
+    doc.rect(0,0,pageW,60,'F');
+    doc.setTextColor(18,49,82);
+    doc.setFontSize(22);
+    doc.text("Grove Hall Park — Quiz Certificate", pageW/2, 38, {align:'center'});
+
+    doc.setFontSize(16);
+    doc.setTextColor(30,30,30);
+    if(studentName){
+      doc.text("Name: " + studentName, 60, y); y += 30;
+    }
+    doc.text("Score: " + score + " / " + total, 60, y); y += 26;
+    doc.text("Time taken: " + m + ":" + s, 60, y); y += 26;
+    doc.text("Result: " + praise, 60, y); y += 40;
+
+    doc.setFontSize(14);
+    doc.text("Answer summary:", 60, y); y += 22;
+    doc.setFontSize(11);
+    answersLog.forEach((a, i)=>{
+      if(y > 780){ doc.addPage(); y = 60; }
+      const mark = a.correct ? "Correct" : "Try again";
+      const line = (i+1) + ". " + a.q + "  —  " + mark;
+      const split = doc.splitTextToSize(line, pageW - 120);
+      doc.text(split, 60, y);
+      y += 16 * split.length + 4;
+    });
+
+    doc.save('grove-hall-park-quiz-result.pdf');
+  };
+}
+
+/* ---------------- INIT ---------------- */
+renderStart();
+</script>
+</body>
+</html>

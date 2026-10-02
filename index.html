@@ -1,1 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phoenix Local Offer Apps</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #eef6ff;
+  color: #172033;
+}
+.container { max-width: 950px; margin: auto; }
+header {
+  background: white;
+  border-radius: 26px;
+  padding: 30px 24px;
+  margin-bottom: 24px;
+  text-align: center;
+  box-shadow: 0 5px 18px rgba(0,0,0,.09);
+}
+h1 { font-size: 40px; margin: 0 0 10px; }
+.intro { font-size: 23px; margin: 0; }
+.apps {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 18px;
+}
+a.app {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-height: 112px;
+  padding: 20px;
+  background: white;
+  color: #172033;
+  text-decoration: none;
+  border-radius: 22px;
+  border: 3px solid transparent;
+  box-shadow: 0 4px 14px rgba(0,0,0,.08);
+  transition: transform .15s, border-color .15s;
+}
+a.app:hover, a.app:focus {
+  transform: translateY(-2px);
+  border-color: #2764d8;
+  outline: none;
+}
+.icon {
+  width: 66px;
+  height: 66px;
+  flex: 0 0 66px;
+  border-radius: 18px;
+  display: grid;
+  place-items: center;
+  font-size: 36px;
+  background: #e5efff;
+}
+.name {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+footer {
+  text-align: center;
+  margin: 30px 0 10px;
+  font-size: 16px;
+}
+</style>
+</head>
 
+<body>
+<div class="container">
+
+<header>
+  <h1>🌍 Phoenix Local Offer</h1>
+  <p class="intro">Choose an activity</p>
+</header>
+
+<div class="apps">
+
+<a class="app" href="advocacy-local-offer.html">
+  <span class="icon">🗣️</span><span class="name">Advocacy Local Offer</span>
+</a>
+
+<a class="app" href="Day%20Trip%20Transport.html">
+  <span class="icon">🚌</span><span class="name">Day Trip Transport</span>
+</a>
+
+<a class="app" href="Franks_Class_My_Community_Minimages.html">
+  <span class="icon">🏙️</span><span class="name">Frank's Class – My Community</span>
+</a>
+
+<a class="app" href="grove-hall-park-quiz.html">
+  <span class="icon">🌳</span><span class="name">Grove Hall Park Quiz</span>
+</a>
+
+<a class="app" href="my_community_games.html">
+  <span class="icon">🎮</span><span class="name">My Community Games</span>
+</a>
+
+<a class="app" href="Places%20Visited.html">
+  <span class="icon">📍</span><span class="name">Places Visited</span>
+</a>
+
+<a class="app" href="Safety%20Check.html">
+  <span class="icon">🛡️</span><span class="name">Safety Check</span>
+</a>
+
+<a class="app" href="Future%20Timetable%20New.html">
+  <span class="icon">📅</span><span class="name">Future Timetable</span>
+</a>
+
+<a class="app" href="phoenix_colourful_semantics_new.html">
+  <span class="icon">🧩</span><span class="name">Colourful Semantics</span>
+</a>
+
+<a class="app" href="phoenix_college_coreboard.html">
+  <span class="icon">💬</span><span class="name">Phoenix College Coreboard</span>
+</a>
+
+</div>
+
+<footer>
+  Phoenix College · Local Offer
+</footer>
+
+</div>
+</body>
+</html>

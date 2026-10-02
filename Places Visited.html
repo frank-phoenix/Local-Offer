@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+<title>Where Did We Go? - Local Offer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root{
+    --sun:#FFF6E9;
+    --sun-deep:#FFE8C2;
+    --navy:#0E2A4A;
+    --navy-soft:#1B3A6B;
+    --white:#FFFFFF;
+    --gold:#F2B705;
+    --c1:#2E8B4F; /* green */
+    --c2:#DC241F; /* red */
+    --c3:#0098D4; /* blue */
+    --c4:#8E44AD; /* purple */
+    --c5:#F07D18; /* orange */
+    --c6:#008E7D; /* teal */
+    --c7:#C2185B; /* pink */
+    --c8:#5D6D7E; /* slate */
+    --shadow: 0 8px 0 rgba(14,42,74,0.15);
+    --radius: 26px;
+    --focus: 4px solid #F2B705;
+  }
+
+  *{ box-sizing:border-box; }
+
+  html,body{
+    margin:0; padding:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 12% 8%, var(--sun-deep) 0%, transparent 45%),
+      radial-gradient(circle at 88% 92%, var(--sun-deep) 0%, transparent 45%),
+      var(--sun);
+    font-family:'Atkinson Hyperlegible', Arial, sans-serif;
+    color:var(--navy);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,h2,h3{
+    font-family:'Baloo 2', 'Atkinson Hyperlegible', sans-serif;
+    font-weight:800;
+    color:var(--navy);
+    margin:0;
+  }
+
+  button{ font-family:inherit; cursor:pointer; }
+  button:focus-visible, input:focus-visible{ outline:var(--focus); outline-offset:3px; }
+
+  .app{
+    max-width:1050px;
+    margin:0 auto;
+    padding:20px 20px 60px;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:18px;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:1.3rem;
+    font-weight:700;
+  }
+  .brand .emoji{ font-size:2rem; }
+
+  .icon-btn{
+    background:var(--white);
+    border:3px solid var(--navy);
+    border-radius:20px;
+    width:56px; height:56px;
+    font-size:1.6rem;
+    display:flex; align-items:center; justify-content:center;
+    box-shadow: var(--shadow);
+  }
+  .icon-btn:active{ transform:translateY(4px); box-shadow:none; }
+  .icon-btn[aria-pressed="false"] .on{ display:none; }
+  .icon-btn[aria-pressed="true"] .off{ display:none; }
+
+  .screen{ display:none; flex:1; flex-direction:column; }
+  .screen.active{ display:flex; }
+
+  /* WELCOME */
+  .welcome{
+    text-align:center;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:26px;
+    padding:20px 10px;
+  }
+  .welcome .hero-emoji{
+    font-size:5rem;
+    line-height:1;
+    animation: bob 3.5s ease-in-out infinite;
+  }
+  @keyframes bob{
+    0%,100%{ transform:translateY(0) rotate(-2deg); }
+    50%{ transform:translateY(-10px) rotate(2deg); }
+  }
+  .welcome h1{ font-size:2.5rem; max-width:600px; }
+  .welcome p.sub{ font-size:1.25rem; max-width:520px; margin:0 auto; }
+
+  .field{
+    display:flex; flex-direction:column; gap:8px; align-items:center;
+    width:100%; max-width:440px;
+  }
+  .field label{ font-size:1.15rem; font-weight:700; }
+  .field input{
+    width:100%;
+    font-size:1.4rem;
+    padding:15px 18px;
+    border-radius:18px;
+    border:3px solid var(--navy);
+    text-align:center;
+    background:var(--white);
+  }
+
+  .big-cta{
+    font-size:1.6rem;
+    font-weight:800;
+    font-family:'Baloo 2', sans-serif;
+    color:var(--white);
+    background:var(--navy-soft);
+    border:none;
+    border-radius:26px;
+    padding:22px 48px;
+    box-shadow: 0 8px 0 #08192e;
+    display:flex; align-items:center; gap:14px;
+  }
+  .big-cta:active{ transform:translateY(6px); box-shadow:0 2px 0 #08192e; }
+
+  /* PROMPT + WORD BANK PAGES */
+  .prompt-bar{ text-align:center; margin-bottom:18px; }
+  .prompt-bar h1{ font-size:2rem; }
+  .prompt-bar p{ font-size:1.1rem; margin-top:6px; }
+
+  .place-name-field{
+    max-width:460px;
+    margin:0 auto 22px;
+  }
+
+  .word-bank{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap:16px;
+  }
+
+  .tile{
+    position:relative;
+    border:none;
+    border-radius:var(--radius);
+    padding:20px 12px 16px;
+    min-height:140px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    color:var(--white);
+    box-shadow: var(--shadow);
+    transition: transform .12s ease;
+    text-align:center;
+  }
+  .tile:active{ transform:translateY(6px); box-shadow:none; }
+  .tile .emoji{ font-size:2.7rem; filter: drop-shadow(0 3px 0 rgba(0,0,0,.15)); }
+  .tile .label{ font-family:'Baloo 2',sans-serif; font-weight:800; font-size:1.15rem; line-height:1.15; }
+
+  .check-badge{
+    position:absolute;
+    top:10px; right:10px;
+    width:38px; height:38px;
+    border-radius:50%;
+    background:var(--gold);
+    color:var(--navy);
+    display:none;
+    align-items:center; justify-content:center;
+    font-size:1.3rem;
+    font-weight:900;
+    border:3px solid var(--white);
+  }
+  .tile[aria-pressed="true"] .check-badge{ display:flex; }
+  .tile[aria-pressed="true"]{ outline:5px solid var(--gold); outline-offset:2px; }
+
+  .footer-actions{
+    margin-top:28px;
+    display:flex;
+    justify-content:center;
+    gap:16px;
+    flex-wrap:wrap;
+  }
+
+  .nav-btn{
+    font-size:1.4rem;
+    font-weight:800;
+    font-family:'Baloo 2',sans-serif;
+    border:none;
+    border-radius:26px;
+    padding:18px 40px;
+    box-shadow: 0 8px 0 rgba(0,0,0,.2);
+    display:none;
+    align-items:center; gap:12px;
+  }
+  .nav-btn.show{ display:flex; }
+  .nav-btn:active{ transform:translateY(6px); box-shadow:0 2px 0 rgba(0,0,0,.2); }
+  .nav-btn.gold{ background:var(--gold); color:var(--navy); }
+  .nav-btn.ghost{ background:var(--white); color:var(--navy); border:3px solid var(--navy); box-shadow:0 5px 0 rgba(14,42,74,.15); display:flex; }
+
+  /* SUMMARY */
+  .summary{
+    text-align:center;
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:22px;
+    padding-top:10px;
+  }
+  .summary .hero-emoji{ font-size:4.5rem; }
+  .summary h1{ font-size:2.2rem; }
+  .summary h2.section-title{ font-size:1.3rem; margin-top:6px; }
+  .summary-list{
+    list-style:none;
+    padding:0; margin:0;
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    justify-content:center;
+    max-width:760px;
+  }
+  .summary-chip{
+    background:var(--white);
+    border-radius:20px;
+    padding:14px 20px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    font-size:1.15rem;
+    font-weight:700;
+    box-shadow: var(--shadow);
+    border:3px solid var(--navy);
+  }
+  .summary-chip .emoji{ font-size:1.7rem; }
+
+  .place-name-tag{
+    font-family:'Baloo 2',sans-serif;
+    font-size:1.4rem;
+    font-weight:800;
+    background:var(--white);
+    border:3px dashed var(--navy);
+    border-radius:20px;
+    padding:12px 24px;
+  }
+
+  .empty-note{
+    font-size:1.1rem;
+    background:var(--white);
+    border-radius:20px;
+    padding:18px 22px;
+    border:3px dashed var(--navy);
+  }
+
+  .screenshot-note{
+    font-size:1.05rem;
+    max-width:480px;
+    background:var(--white);
+    border-radius:18px;
+    padding:14px 18px;
+    border:3px solid var(--gold);
+  }
+
+  #confetti-canvas{
+    position:fixed; inset:0;
+    pointer-events:none;
+    z-index:80;
+  }
+
+  .sr-only{
+    position:absolute; width:1px; height:1px;
+    overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .welcome .hero-emoji{ animation:none; }
+    *{ transition:none !important; }
+  }
+
+  @media (max-width:480px){
+    .welcome h1{ font-size:1.9rem; }
+    .prompt-bar h1{ font-size:1.6rem; }
+    .tile .emoji{ font-size:2.3rem; }
+    .big-cta{ padding:18px 32px; font-size:1.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="confetti-canvas" aria-hidden="true"></canvas>
+
+<div class="app">
+
+  <div class="topbar">
+    <div class="brand"><span class="emoji">🗺️</span><span>Local Offer: Where Did We Go?</span></div>
+    <button class="icon-btn" id="soundToggle" aria-pressed="false" aria-label="Turn sound on or off">
+      <span class="off">🔇</span><span class="on">🔊</span>
+    </button>
+  </div>
+
+  <!-- SCREEN 1: WELCOME -->
+  <section class="screen active" id="screen-welcome">
+    <div class="welcome">
+      <div class="hero-emoji" aria-hidden="true">🏛️🌳🏊</div>
+      <h1>Where did we go today?</h1>
+      <p class="sub">Let's remember the place we visited and what we did there!</p>
+      <div class="field">
+        <label for="studentName">My name is:</label>
+        <input type="text" id="studentName" placeholder="Type your name (optional)" autocomplete="off">
+      </div>
+      <button class="big-cta" id="startBtn"><span>▶️</span> Start</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 2: PLACE TYPE WORD BANK -->
+  <section class="screen" id="screen-places">
+    <div class="prompt-bar">
+      <h1>What kind of place did we visit?</h1>
+      <p>Tap all the ones that match. You can choose more than one!</p>
+    </div>
+
+    <div class="field place-name-field">
+      <label for="placeName">Name of the place (optional):</label>
+      <input type="text" id="placeName" placeholder="e.g. Victoria Park" autocomplete="off">
+    </div>
+
+    <div class="word-bank" id="placeGrid"></div>
+
+    <div class="footer-actions">
+      <button class="nav-btn ghost show" id="toActivitiesBtn"><span>➡️</span> Next: What did we do?</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: ACTIVITIES WORD BANK -->
+  <section class="screen" id="screen-activities">
+    <div class="prompt-bar">
+      <h1>What did we do there?</h1>
+      <p>Tap all the ones that match. You can choose more than one!</p>
+    </div>
+
+    <div class="word-bank" id="activityGrid"></div>
+
+    <div class="footer-actions">
+      <button class="nav-btn ghost show" id="backToPlacesBtn"><span>⬅️</span> Back</button>
+      <button class="nav-btn gold" id="toSummaryBtn"><span>🏁</span> Show my summary</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: SUMMARY -->
+  <section class="screen" id="screen-summary">
+    <div class="summary">
+      <div class="hero-emoji" aria-hidden="true">🎉</div>
+      <h1>Great job today!</h1>
+      <div id="placeNameTagWrap"></div>
+
+      <h2 class="section-title">📍 Where we went</h2>
+      <ul class="summary-list" id="summaryPlaces"></ul>
+      <p class="empty-note" id="emptyPlacesNote" style="display:none;">No place selected yet.</p>
+
+      <h2 class="section-title">✅ What we did</h2>
+      <ul class="summary-list" id="summaryActivities"></ul>
+      <p class="empty-note" id="emptyActivitiesNote" style="display:none;">No activities selected yet.</p>
+
+      <p class="screenshot-note">📸 Tip: take a screenshot now to keep a picture of your work, or download a PDF below!</p>
+
+      <div class="footer-actions">
+        <button class="nav-btn ghost show" id="downloadPdfBtn"><span>⬇️</span> Download PDF</button>
+        <button class="nav-btn ghost show" id="backToActivitiesBtn"><span>⬅️</span> Back</button>
+        <button class="nav-btn ghost show" id="restartBtn"><span>🔄</span> Start again</button>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="sr-only" aria-live="polite" id="liveRegion"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  const PLACES = [
+    {name:"Library", emoji:"📚", color:"c3"},
+    {name:"Museum", emoji:"🏛️", color:"c4"},
+    {name:"Park", emoji:"🌳", color:"c1"},
+    {name:"Gym / Leisure Centre", emoji:"🏋️", color:"c5"},
+    {name:"Swimming Pool", emoji:"🏊", color:"c3"},
+    {name:"Community Hub", emoji:"🏘️", color:"c6"},
+    {name:"Doctors (GP)", emoji:"🩺", color:"c2"},
+    {name:"Pharmacy", emoji:"💊", color:"c7"},
+    {name:"Hairdresser", emoji:"💇", color:"c7"},
+    {name:"Shop / Supermarket", emoji:"🛒", color:"c5"},
+    {name:"Café / Restaurant", emoji:"☕", color:"c5"},
+    {name:"Cinema", emoji:"🎬", color:"c4"},
+    {name:"Post Office", emoji:"📮", color:"c2"},
+    {name:"Bank", emoji:"🏦", color:"c6"},
+    {name:"Police Station", emoji:"👮", color:"c3"},
+    {name:"Job Centre", emoji:"💼", color:"c8"},
+    {name:"Place of Worship", emoji:"🕌", color:"c4"},
+    {name:"Playground", emoji:"🛝", color:"c1"},
+    {name:"Sports Centre", emoji:"⚽", color:"c1"},
+    {name:"Market", emoji:"🏪", color:"c5"},
+    {name:"Garden Centre", emoji:"🌻", color:"c1"},
+    {name:"Farm / Zoo", emoji:"🐄", color:"c6"},
+    {name:"Theatre", emoji:"🎭", color:"c7"},
+    {name:"Art Gallery", emoji:"🖼️", color:"c4"},
+    {name:"Fire Station", emoji:"🚒", color:"c2"},
+    {name:"Other", emoji:"❓", color:"c8"}
+  ];
+
+  const ACTIVITIES = [
+    {name:"Ate lunch / a snack", emoji:"🍽️", color:"c5"},
+    {name:"Spoke to people", emoji:"🗣️", color:"c3"},
+    {name:"Saw interesting things", emoji:"👀", color:"c4"},
+    {name:"Waited in a queue", emoji:"⏳", color:"c8"},
+    {name:"Asked for help", emoji:"🙋", color:"c1"},
+    {name:"Paid for something", emoji:"💳", color:"c6"},
+    {name:"Read signs / information", emoji:"📋", color:"c3"},
+    {name:"Used the toilet", emoji:"🚻", color:"c8"},
+    {name:"Sat and rested", emoji:"🪑", color:"c5"},
+    {name:"Took a photo", emoji:"📷", color:"c4"},
+    {name:"Learned something new", emoji:"💡", color:"c7"},
+    {name:"Kept safe / followed rules", emoji:"🚦", color:"c2"},
+    {name:"Said please and thank you", emoji:"🙏", color:"c1"},
+    {name:"Listened carefully", emoji:"👂", color:"c3"},
+    {name:"Moved my body / exercised", emoji:"🏃", color:"c6"},
+    {name:"Enjoyed music or sounds", emoji:"🎵", color:"c7"}
+  ];
+
+  const COLOR_MAP = {
+    c1:"#2E8B4F", c2:"#DC241F", c3:"#0098D4", c4:"#8E44AD",
+    c5:"#F07D18", c6:"#008E7D", c7:"#C2185B", c8:"#5D6D7E"
+  };
+
+  const selected = { places: new Set(), activities: new Set() };
+  let soundOn = false;
+
+  function $(id){ return document.getElementById(id); }
+  function announce(msg){ $("liveRegion").textContent = msg; }
+
+  function showScreen(id){
+    document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
+    $(id).classList.add("active");
+    window.scrollTo({top:0, behavior:"smooth"});
+  }
+
+  /* ---------- SOUND ---------- */
+  let audioCtx;
+  function chime(success){
+    if(!soundOn) return;
+    try{
+      audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
+      const now = audioCtx.currentTime;
+      const freqs = success ? [523.25, 659.25, 783.99] : [392];
+      freqs.forEach((f,i) => {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = "sine";
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(0, now + i*0.09);
+        gain.gain.linearRampToValueAtTime(0.15, now + i*0.09 + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.09 + 0.35);
+        osc.connect(gain).connect(audioCtx.destination);
+        osc.start(now + i*0.09);
+        osc.stop(now + i*0.09 + 0.4);
+      });
+    }catch(e){}
+  }
+
+  $("soundToggle").addEventListener("click", function(){
+    soundOn = !soundOn;
+    this.setAttribute("aria-pressed", soundOn ? "true" : "false");
+    if(soundOn) chime(true);
+  });
+
+  /* ---------- CONFETTI ---------- */
+  const canvas = $("confetti-canvas");
+  const ctx = canvas.getContext("2d");
+  function resizeCanvas(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+  resizeCanvas();
+  window.addEventListener("resize", resizeCanvas);
+
+  let particles = [];
+  const CONFETTI_COLORS = ["#F2B705","#DC241F","#2E8B4F","#0098D4","#F07D18","#8E44AD"];
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let confettiRunning = false;
+
+  function burstConfetti(x, y, count){
+    if(reduceMotion) return;
+    count = count || 24;
+    for(let i=0;i<count;i++){
+      particles.push({
+        x:x, y:y,
+        vx:(Math.random()-0.5)*6,
+        vy:-(Math.random()*6+3),
+        size:Math.random()*7+5,
+        color:CONFETTI_COLORS[Math.floor(Math.random()*CONFETTI_COLORS.length)],
+        rot:Math.random()*360,
+        vr:(Math.random()-0.5)*10,
+        life:0
+      });
+    }
+    if(particles.length && !confettiRunning){ confettiRunning = true; requestAnimationFrame(tickConfetti); }
+  }
+
+  function tickConfetti(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach(p=>{
+      p.vy += 0.18;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.rot += p.vr;
+      p.life += 1;
+      ctx.save();
+      ctx.translate(p.x,p.y);
+      ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
+      ctx.restore();
+    });
+    particles = particles.filter(p => p.y < canvas.height+40 && p.life < 220);
+    if(particles.length){
+      requestAnimationFrame(tickConfetti);
+    } else {
+      confettiRunning = false;
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+    }
+  }
+
+  function burstFromElement(el){
+    const r = el.getBoundingClientRect();
+    burstConfetti(r.left + r.width/2, r.top + r.height/2, 26);
+  }
+
+  /* ---------- WELCOME -> PLACES ---------- */
+  $("startBtn").addEventListener("click", function(){
+    chime(true);
+    showScreen("screen-places");
+  });
+
+  /* ---------- BUILD WORD BANKS ---------- */
+  function buildWordBank(gridId, items, targetSet, announceSuffix){
+    const grid = $(gridId);
+    items.forEach(item => {
+      const btn = document.createElement("button");
+      btn.className = "tile";
+      btn.type = "button";
+      btn.setAttribute("aria-pressed","false");
+      btn.style.background = COLOR_MAP[item.color];
+      btn.innerHTML = `<span class="check-badge">✓</span><span class="emoji" aria-hidden="true">${item.emoji}</span><span class="label">${item.name}</span>`;
+      btn.addEventListener("click", function(){
+        if(targetSet.has(item.name)){
+          targetSet.delete(item.name);
+          btn.setAttribute("aria-pressed","false");
+          chime(false);
+          announce(item.name + " removed");
+        } else {
+          targetSet.add(item.name);
+          btn.setAttribute("aria-pressed","true");
+          chime(true);
+          burstFromElement(btn);
+          announce(item.name + " selected " + announceSuffix);
+        }
+      });
+      grid.appendChild(btn);
+    });
+  }
+
+  buildWordBank("placeGrid", PLACES, selected.places, "");
+  buildWordBank("activityGrid", ACTIVITIES, selected.activities, "");
+
+  /* ---------- NAVIGATION ---------- */
+  $("toActivitiesBtn").addEventListener("click", function(){ showScreen("screen-activities"); });
+  $("backToPlacesBtn").addEventListener("click", function(){ showScreen("screen-places"); });
+  $("backToActivitiesBtn").addEventListener("click", function(){ showScreen("screen-activities"); });
+
+  $("toSummaryBtn").addEventListener("click", function(){
+    buildSummary();
+    showScreen("screen-summary");
+    setTimeout(()=> burstConfetti(window.innerWidth/2, window.innerHeight*0.25, 60), 150);
+    chime(true);
+  });
+
+  /* ---------- SUMMARY ---------- */
+  function buildSummary(){
+    const placeName = $("placeName").value.trim();
+    const tagWrap = $("placeNameTagWrap");
+    tagWrap.innerHTML = placeName ? `<div class="place-name-tag">📍 ${placeName}</div>` : "";
+
+    const placesList = $("summaryPlaces");
+    placesList.innerHTML = "";
+    PLACES.forEach(item => {
+      if(selected.places.has(item.name)){
+        const li = document.createElement("li");
+        li.className = "summary-chip";
+        li.innerHTML = `<span class="emoji" aria-hidden="true">${item.emoji}</span><span>${item.name}</span>`;
+        placesList.appendChild(li);
+      }
+    });
+    $("emptyPlacesNote").style.display = selected.places.size ? "none" : "block";
+
+    const activitiesList = $("summaryActivities");
+    activitiesList.innerHTML = "";
+    ACTIVITIES.forEach(item => {
+      if(selected.activities.has(item.name)){
+        const li = document.createElement("li");
+        li.className = "summary-chip";
+        li.innerHTML = `<span class="emoji" aria-hidden="true">${item.emoji}</span><span>${item.name}</span>`;
+        activitiesList.appendChild(li);
+      }
+    });
+    $("emptyActivitiesNote").style.display = selected.activities.size ? "none" : "block";
+  }
+
+  /* ---------- RESTART ---------- */
+  $("restartBtn").addEventListener("click", function(){
+    selected.places.clear();
+    selected.activities.clear();
+    document.querySelectorAll(".tile").forEach(t => t.setAttribute("aria-pressed","false"));
+    $("studentName").value = "";
+    $("placeName").value = "";
+    showScreen("screen-welcome");
+  });
+
+  /* ---------- PDF DOWNLOAD ---------- */
+  $("downloadPdfBtn").addEventListener("click", function(){
+    try{
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({unit:"pt", format:"a4"});
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const name = $("studentName").value.trim();
+      const placeName = $("placeName").value.trim();
+      const dateStr = new Date().toLocaleDateString("en-GB", { day:"numeric", month:"long", year:"numeric" });
+
+      doc.setFillColor(14,42,74);
+      doc.rect(0,0,pageWidth,90,"F");
+      doc.setTextColor(255,255,255);
+      doc.setFontSize(22);
+      doc.text("Where Did We Go? - Local Offer Summary", pageWidth/2, 40, {align:"center"});
+      doc.setFontSize(12);
+      doc.text("Local Offer Session - Phoenix College", pageWidth/2, 62, {align:"center"});
+
+      doc.setTextColor(14,42,74);
+      let y = 128;
+      doc.setFontSize(14);
+      doc.text("Name: " + (name || "________________________"), 60, y);
+      y += 22;
+      doc.text("Date: " + dateStr, 60, y);
+      y += 22;
+      if(placeName){
+        doc.text("Place visited: " + placeName, 60, y);
+        y += 22;
+      }
+      y += 16;
+
+      function section(title, items, emptyText){
+        doc.setFontSize(16);
+        doc.text(title, 60, y);
+        y += 26;
+        doc.setFontSize(13);
+        if(items.length === 0){
+          doc.setTextColor(120,120,120);
+          doc.text(emptyText, 74, y);
+          doc.setTextColor(14,42,74);
+          y += 24;
+        } else {
+          items.forEach(text => {
+            doc.setFillColor(242,183,5);
+            doc.circle(66, y-4, 4, "F");
+            doc.text(text, 80, y);
+            y += 22;
+          });
+        }
+        y += 18;
+      }
+
+      section("Kind of place:", Array.from(selected.places), "None selected");
+      section("What we did there:", Array.from(selected.activities), "None selected");
+
+      doc.setDrawColor(14,42,74);
+      doc.line(60, y, pageWidth-60, y);
+      y += 30;
+      doc.setFontSize(11);
+      doc.setTextColor(90,90,90);
+      doc.text("Great work exploring our local community today!", 60, y);
+
+      const filenameBase = (name || placeName || "our_visit").replace(/\s+/g,"_");
+      doc.save(filenameBase + "_place_summary.pdf");
+      chime(true);
+    }catch(e){
+      alert("Sorry, the PDF could not be created. Please try the screenshot option instead.");
+    }
+  });
+
+})();
+</script>
+</body>
+</html>

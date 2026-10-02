@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phoenix Colourful Semantics</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<style>
+:root{
+  --who:#E85D04;--who-l:#FFF3E8;--who-d:#7C2D12;
+  --doing:#CA8A04;--doing-l:#FEFCE8;--doing-d:#713F12;
+  --where:#2563EB;--where-l:#EFF6FF;--where-d:#1E3A8A;
+  --what:#16A34A;--what-l:#F0FDF4;--what-d:#14532D;
+  --whatlike:#DC2626;--whatlike-l:#FEF2F2;--whatlike-d:#7F1D1D;
+  --how:#7C3AED;--how-l:#F5F3FF;--how-d:#3B0764;
+  --whoto:#EC4899;--whoto-l:#FDF2F8;--whoto-d:#831843;
+  --when:#0891B2;--when-l:#ECFEFF;--when-d:#164E63;
+  --r:16px;--r-lg:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito',sans-serif;background:#FFF9F0;min-height:100vh;overflow-x:hidden;}
+
+header{background:linear-gradient(135deg,#FF6B35 0%,#F7C59F 25%,#EFEFD0 50%,#7BC67E 75%,#4F9EE8 100%);padding:0.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.logo{font-family:'Fredoka One',cursive;font-size:2rem;color:white;text-shadow:2px 2px 0 rgba(0,0,0,0.15);display:flex;align-items:center;gap:8px;}
+.logo-sub{font-size:0.85rem;font-weight:700;color:rgba(255,255,255,0.9);font-family:'Nunito',sans-serif;margin-top:2px;}
+.hctrls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.hbtn{background:rgba(255,255,255,0.88);border:none;border-radius:50px;padding:7px 14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.82rem;cursor:pointer;transition:all 0.18s;color:#333;display:flex;align-items:center;gap:5px;}
+.hbtn:hover{background:white;transform:scale(1.05);}
+.hbtn.on{background:#DC2626;color:white;}
+
+/* ACTIVITY BAR */
+.act-bar{background:white;border-bottom:3px solid #F0E8D8;padding:0.6rem 1rem;display:flex;gap:8px;overflow-x:auto;align-items:center;}
+.act-lbl{font-weight:800;font-size:0.85rem;color:#888;white-space:nowrap;flex-shrink:0;}
+.abt{border:2px solid #ddd;background:white;border-radius:50px;padding:7px 14px;font-family:'Nunito',sans-serif;font-weight:700;font-size:0.82rem;cursor:pointer;white-space:nowrap;transition:all 0.18s;display:flex;align-items:center;gap:5px;flex-shrink:0;}
+.abt:hover,.abt.active{border-color:#333;background:#333;color:white;}
+
+/* LAYOUT */
+.main{display:grid;grid-template-columns:1fr 320px;height:calc(100vh - 112px);overflow:hidden;}
+.canvas{padding:1rem 1.2rem;overflow-y:auto;display:flex;flex-direction:column;gap:0.9rem;}
+.sidebar{background:white;border-left:3px solid #F0E8D8;overflow-y:auto;padding:0.9rem;}
+
+/* PROMPT */
+.prompt-box{background:white;border-radius:var(--r-lg);padding:0.8rem 1.1rem;border:3px solid #F0E8D8;font-size:1rem;font-weight:700;color:#666;display:flex;align-items:center;gap:10px;}
+
+/* SENTENCE AREA */
+.sent-wrap{display:flex;flex-direction:column;gap:6px;}
+.color-bar{display:flex;height:6px;border-radius:50px;overflow:hidden;gap:2px;}
+.cb{flex:1;border-radius:50px;}
+.sent-chips{background:white;border-radius:var(--r-lg);border:3px dashed #ddd;padding:0.9rem 1rem;min-height:80px;display:flex;flex-wrap:wrap;gap:7px;align-items:flex-start;position:relative;transition:border-color 0.25s;}
+.sent-chips.has-focus{border-color:#7C3AED;border-style:solid;}
+.hint{color:#ccc;font-weight:700;font-size:1rem;align-self:center;pointer-events:none;position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap;}
+
+/* TYPE INPUT */
+.type-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.type-input{flex:1;min-width:200px;border:2.5px solid #ddd;border-radius:50px;padding:10px 16px;font-family:'Nunito',sans-serif;font-size:1rem;font-weight:700;outline:none;transition:border-color 0.2s;}
+.type-input:focus{border-color:#7C3AED;}
+.type-sel{border:2.5px solid #ddd;border-radius:50px;padding:10px 12px;font-family:'Nunito',sans-serif;font-size:0.88rem;font-weight:700;outline:none;background:white;cursor:pointer;}
+.type-sel:focus{border-color:#7C3AED;}
+.type-add{border:none;border-radius:50px;padding:10px 18px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.95rem;cursor:pointer;background:#7C3AED;color:white;transition:all 0.2s;white-space:nowrap;}
+.type-add:hover{background:#6D28D9;transform:scale(1.04);}
+
+/* WORD CHIP */
+.chip{display:inline-flex;align-items:center;gap:5px;border-radius:50px;padding:8px 14px;font-size:1.05rem;font-weight:800;cursor:pointer;transition:all 0.18s;border:none;font-family:'Nunito',sans-serif;animation:popIn 0.22s cubic-bezier(0.175,0.885,0.32,1.275);line-height:1;}
+@keyframes popIn{0%{transform:scale(0);}100%{transform:scale(1);}}
+.chip:hover{transform:scale(1.07);filter:brightness(1.08);}
+.chip .rm{font-size:0.7rem;opacity:0.55;margin-left:2px;}
+.chip .rm:hover{opacity:1;}
+.c-who{background:var(--who);color:white;}
+.c-doing{background:var(--doing);color:white;}
+.c-where{background:var(--where);color:white;}
+.c-what{background:var(--what);color:white;}
+.c-whatlike{background:var(--whatlike);color:white;}
+.c-how{background:var(--how);color:white;}
+.c-whoto{background:var(--whoto);color:white;}
+.c-when{background:var(--when);color:white;}
+.c-punct{background:#555;color:white;}
+.c-custom{background:#8B5CF6;color:white;}
+
+/* SENTENCE DISPLAY */
+.sent-display{background:white;border-radius:var(--r-lg);border:3px solid #F0E8D8;padding:1rem 1.1rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.sent-text{font-size:1.5rem;font-weight:800;color:#222;flex:1;line-height:1.4;}
+.speak-btn{background:#16A34A;color:white;border:none;border-radius:50px;padding:9px 18px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.9rem;cursor:pointer;display:flex;align-items:center;gap:7px;transition:all 0.2s;flex-shrink:0;}
+.speak-btn:hover{background:#15803D;transform:scale(1.05);}
+.speak-btn.pulsing{animation:sp 0.7s ease-in-out infinite alternate;}
+@keyframes sp{0%{box-shadow:0 0 0 0 rgba(22,163,74,.5);}100%{box-shadow:0 0 0 12px rgba(22,163,74,0);}}
+.clear-btn{background:#F3F4F6;color:#555;border:none;border-radius:50px;padding:9px 14px;font-family:'Nunito',sans-serif;font-weight:800;font-size:0.88rem;cursor:pointer;transition:all 0.2s;flex-shrink:0;}
+.clear-btn:hover{background:#E5E7EB;color:#DC2626;}
+
+/* WORD BANK SECTIONS */
+.section{border-radius:var(--r);padding:0.9rem 1rem;margin-bottom:0;}
+.sec-hdr{display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none;margin-bottom:0.7rem;}
+.sec-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;}
+.sec-title{font-size:1.1rem;font-weight:900;font-family:'Fredoka One',cursive;}
+.sec-desc{font-size:0.75rem;font-weight:700;opacity:0.75;margin-top:1px;}
+.toggle-arrow{margin-left:auto;font-size:1.3rem;transition:transform 0.2s;}
+.toggle-arrow.closed{transform:rotate(-90deg);}
+.words{display:flex;flex-wrap:wrap;gap:7px;}
+.wb{border-radius:50px;padding:9px 16px;font-size:1rem;font-weight:800;cursor:pointer;transition:all 0.18s;border:none;font-family:'Nunito',sans-serif;display:flex;align-items:center;gap:5px;line-height:1;}
+.wb:hover{transform:scale(1.08);filter:brightness(1.1);}
+.wb:active{transform:scale(0.94);}
+.wb .s{font-size:1.1rem;}
+.wb-who{background:var(--who);color:white;}
+.wb-doing{background:var(--doing);color:white;}
+.wb-where{background:var(--where);color:white;}
+.wb-what{background:var(--what);color:white;}
+.wb-whatlike{background:var(--whatlike);color:white;}
+.wb-how{background:var(--how);color:white;}
+.wb-whoto{background:var(--whoto);color:white;}
+.wb-when{background:var(--when);color:white;}
+.wb-punct{background:#555;color:white;}
+
+.sec-who{background:var(--who-l);}
+.sec-who .sec-title{color:var(--who-d);}
+.sec-who .sec-icon{background:var(--who);}
+.sec-doing{background:var(--doing-l);}
+.sec-doing .sec-title{color:var(--doing-d);}
+.sec-doing .sec-icon{background:var(--doing);}
+.sec-where{background:var(--where-l);}
+.sec-where .sec-title{color:var(--where-d);}
+.sec-where .sec-icon{background:var(--where);}
+.sec-what{background:var(--what-l);}
+.sec-what .sec-title{color:var(--what-d);}
+.sec-what .sec-icon{background:var(--what);}
+.sec-whatlike{background:var(--whatlike-l);}
+.sec-whatlike .sec-title{color:var(--whatlike-d);}
+.sec-whatlike .sec-icon{background:var(--whatlike);}
+.sec-how{background:var(--how-l);}
+.sec-how .sec-title{color:var(--how-d);}
+.sec-how .sec-icon{background:var(--how);}
+.sec-whoto{background:var(--whoto-l);}
+.sec-whoto .sec-title{color:var(--whoto-d);}
+.sec-whoto .sec-icon{background:var(--whoto);}
+.sec-when{background:var(--when-l);}
+.sec-when .sec-title{color:var(--when-d);}
+.sec-when .sec-icon{background:var(--when);}
+.sec-conn{background:#F8F8F8;border:2px solid #eee;}
+.sec-conn .sec-title{color:#444;}
+
+/* SIDEBAR */
+.sb-h{font-family:'Fredoka One',cursive;font-size:1rem;color:#333;margin-bottom:0.5rem;display:flex;align-items:center;gap:5px;}
+.sb-sep{border:none;border-top:2px solid #F0E8D8;margin:0.8rem 0;}
+.key-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px;}
+.key-item{display:flex;align-items:center;gap:5px;font-size:0.75rem;font-weight:800;color:#444;}
+.key-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
+.saved-item{background:#F8F8F8;border-radius:10px;padding:9px 11px;margin-bottom:7px;font-weight:700;font-size:0.85rem;cursor:pointer;transition:all 0.18s;border:2px solid transparent;display:flex;align-items:center;gap:7px;}
+.saved-item:hover{border-color:#7C3AED;background:#F5F3FF;}
+.saved-del{background:none;border:none;cursor:pointer;color:#bbb;font-size:0.95rem;margin-left:auto;padding:0 3px;}
+.saved-del:hover{color:#DC2626;}
+.exp-row{display:flex;flex-direction:column;gap:7px;}
+.ebtn{border:none;border-radius:10px;padding:10px 14px;font-family:'Nunito',sans-serif;font-weight:800;cursor:pointer;font-size:0.9rem;transition:all 0.18s;display:flex;align-items:center;gap:7px;width:100%;}
+.ebtn:hover{transform:scale(1.02);}
+.e-save{background:#FFF3E8;color:#E85D04;border:2px solid #E85D04;}
+.e-txt{background:#F0FDF4;color:#16A34A;border:2px solid #16A34A;}
+.e-pdf{background:#FEF2F2;color:#DC2626;border:2px solid #DC2626;}
+.e-clr{background:#F5F3FF;color:#7C3AED;border:2px solid #7C3AED;}
+.tip{background:#FFFBEB;border:2px dashed #EAB308;border-radius:10px;padding:9px;font-size:0.78rem;font-weight:700;color:#713F12;text-align:center;line-height:1.4;margin-top:0.5rem;}
+
+/* CONFETTI */
+.conf-wrap{position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:999;}
+.conf{position:absolute;width:9px;height:9px;border-radius:2px;animation:fall linear forwards;}
+@keyframes fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(100vh) rotate(720deg);opacity:0;}}
+
+/* GRAMMAR TIP */
+.grammar-tip{background:#FFFBEB;border:2px solid #FDE68A;border-radius:12px;padding:8px 12px;font-size:0.85rem;font-weight:800;color:#92400E;display:none;align-items:center;gap:8px;}
+.grammar-tip.show{display:flex;}
+
+/* HELP MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:500;align-items:center;justify-content:center;}
+.modal-bg.open{display:flex;}
+.modal{background:white;border-radius:22px;padding:1.8rem;max-width:460px;width:90%;max-height:82vh;overflow-y:auto;}
+
+/* FOCUS */
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #7C3AED;outline-offset:2px;}
+
+@media(max-width:760px){
+  .main{grid-template-columns:1fr;height:auto;}
+  .sidebar{border-left:none;border-top:3px solid #F0E8D8;}
+  .logo{font-size:1.5rem;}
+  .hctrls{position:static;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo">🔥 Phoenix Colourful Semantics</div>
+    <div class="logo-sub">Build sentences · Tell stories · Share ideas</div>
+  </div>
+  <div class="hctrls">
+    <button class="hbtn" id="muteBtn" onclick="toggleMute()" aria-pressed="false">🔊 Sound on</button>
+    <button class="hbtn" onclick="showHelp()">❓ Help</button>
+  </div>
+</header>
+
+<div class="act-bar" role="navigation" aria-label="Activity">
+  <span class="act-lbl">📚 Activity:</span>
+  <button class="abt active" onclick="setAct(this,'free')">✨ Free build</button>
+  <button class="abt" onclick="setAct(this,'describe')">🖼️ Describe a picture</button>
+  <button class="abt" onclick="setAct(this,'myday')">☀️ My day</button>
+  <button class="abt" onclick="setAct(this,'feelings')">💛 My feelings</button>
+  <button class="abt" onclick="setAct(this,'story')">📖 Tell a story</button>
+  <button class="abt" onclick="setAct(this,'news')">📰 Show and tell</button>
+  <button class="abt" onclick="setAct(this,'question')">🙋 Ask a question</button>
+</div>
+
+<div class="main">
+<div class="canvas" id="canvas">
+
+  <!-- Prompt -->
+  <div class="prompt-box" id="promptBox">
+    <span style="font-size:1.5rem">✨</span>
+    <span id="promptText">Pick words below OR type your own above to build a sentence!</span>
+  </div>
+
+  <!-- Grammar tip -->
+  <div class="grammar-tip" id="grammarTip">
+    <span>💡</span><span id="grammarMsg"></span>
+  </div>
+
+  <!-- Sentence chips -->
+  <div class="sent-wrap">
+    <div class="color-bar" aria-hidden="true">
+      <div class="cb" style="background:var(--who)"></div>
+      <div class="cb" style="background:var(--doing)"></div>
+      <div class="cb" style="background:var(--where)"></div>
+      <div class="cb" style="background:var(--what)"></div>
+      <div class="cb" style="background:var(--whatlike)"></div>
+      <div class="cb" style="background:var(--how)"></div>
+      <div class="cb" style="background:var(--whoto)"></div>
+      <div class="cb" style="background:var(--when)"></div>
+    </div>
+    <div class="sent-chips" id="sentChips" role="region" aria-label="Your sentence" aria-live="polite">
+      <span class="hint" id="hint">Tap words below to build your sentence ↓</span>
+    </div>
+  </div>
+
+  <!-- Type your own -->
+  <div class="type-row">
+    <input class="type-input" id="typeInput" type="text" placeholder="✏️ Type your own word here..." maxlength="40" aria-label="Type a word to add to your sentence">
+    <select class="type-sel" id="typeCat" aria-label="Word type">
+      <option value="who">🟠 Who</option>
+      <option value="doing" selected>🟡 Doing</option>
+      <option value="where">🔵 Where</option>
+      <option value="what">🟢 What</option>
+      <option value="whatlike">🔴 What like</option>
+      <option value="how">🟣 How</option>
+      <option value="whoto">🩷 Who to</option>
+      <option value="when">🩵 When</option>
+      <option value="punct">⚫ Connector</option>
+    </select>
+    <button class="type-add" onclick="addTyped()">➕ Add</button>
+  </div>
+
+  <!-- Sentence display -->
+  <div class="sent-display">
+    <div class="sent-text" id="sentText" aria-live="polite">Your sentence will appear here...</div>
+    <button class="speak-btn" id="speakBtn" onclick="speakSentence()">🔊 Read it!</button>
+    <button class="clear-btn" onclick="clearSentence()" aria-label="Clear sentence">🗑️ Clear</button>
+  </div>
+
+  <!-- WORD BANK -->
+  <div id="wordbank" aria-label="Word bank">
+
+  <!-- WHO -->
+  <div class="section sec-who">
+    <div class="sec-hdr" onclick="toggleSec('who')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('who')">
+      <div class="sec-icon">🧍</div>
+      <div><div class="sec-title">WHO?</div><div class="sec-desc">Names · People · Animals · Characters</div></div>
+      <span class="toggle-arrow" id="arr-who">▾</span>
+    </div>
+    <div class="words" id="words-who">
+      <button class="wb wb-who" onclick="addWord('I','who','👤')"><span class="s">👤</span>I</button>
+      <button class="wb wb-who" onclick="addWord('me','who','🫵')"><span class="s">🫵</span>me</button>
+      <button class="wb wb-who" onclick="addWord('we','who','👥')"><span class="s">👥</span>we</button>
+      <button class="wb wb-who" onclick="addWord('they','who','👫')"><span class="s">👫</span>they</button>
+      <button class="wb wb-who" onclick="addWord('he','who','👦')"><span class="s">👦</span>he</button>
+      <button class="wb wb-who" onclick="addWord('she','who','👧')"><span class="s">👧</span>she</button>
+      <button class="wb wb-who" onclick="addWord('Mum','who','👩')"><span class="s">👩</span>Mum</button>
+      <button class="wb wb-who" onclick="addWord('Dad','who','👨')"><span class="s">👨</span>Dad</button>
+      <button class="wb wb-who" onclick="addWord('my friend','who','🤝')"><span class="s">🤝</span>my friend</button>
+      <button class="wb wb-who" onclick="addWord('my teacher','who','🧑‍🏫')"><span class="s">🧑‍🏫</span>my teacher</button>
+      <button class="wb wb-who" onclick="addWord('my brother','who','👦')"><span class="s">👦</span>my brother</button>
+      <button class="wb wb-who" onclick="addWord('my sister','who','👧')"><span class="s">👧</span>my sister</button>
+      <button class="wb wb-who" onclick="addWord('my dog','who','🐕')"><span class="s">🐕</span>my dog</button>
+      <button class="wb wb-who" onclick="addWord('my cat','who','🐈')"><span class="s">🐈</span>my cat</button>
+      <button class="wb wb-who" onclick="addWord('the boy','who','👦')"><span class="s">👦</span>the boy</button>
+      <button class="wb wb-who" onclick="addWord('the girl','who','👧')"><span class="s">👧</span>the girl</button>
+      <button class="wb wb-who" onclick="addWord('a monster','who','👾')"><span class="s">👾</span>a monster</button>
+      <button class="wb wb-who" onclick="addWord('the dragon','who','🐉')"><span class="s">🐉</span>the dragon</button>
+      <button class="wb wb-who" onclick="addWord('my grandma','who','👵')"><span class="s">👵</span>my grandma</button>
+      <button class="wb wb-who" onclick="addWord('my grandad','who','👴')"><span class="s">👴</span>my grandad</button>
+      <button class="wb wb-who" onclick="addWord('the baby','who','👶')"><span class="s">👶</span>the baby</button>
+      <button class="wb wb-who" onclick="addWord('everyone','who','🌍')"><span class="s">🌍</span>everyone</button>
+      <button class="wb wb-who" onclick="addWord('nobody','who','🚫')"><span class="s">🚫</span>nobody</button>
+      <button class="wb wb-who" onclick="addWord('the robot','who','🤖')"><span class="s">🤖</span>the robot</button>
+    </div>
+  </div>
+
+  <!-- WHAT DOING -->
+  <div class="section sec-doing">
+    <div class="sec-hdr" onclick="toggleSec('doing')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('doing')">
+      <div class="sec-icon">🏃</div>
+      <div><div class="sec-title">WHAT DOING?</div><div class="sec-desc">Verbs · Actions · Is / am / are + doing</div></div>
+      <span class="toggle-arrow" id="arr-doing">▾</span>
+    </div>
+    <div id="words-doing">
+      <div style="background:rgba(202,138,4,0.12);border-radius:12px;padding:8px 10px;margin-bottom:8px;font-size:0.82rem;font-weight:800;color:var(--doing-d);">
+        💡 Grammar helper — pick the right one first:
+        <div class="words" style="margin-top:6px;">
+          <button class="wb wb-doing" onclick="addWord('I am','doing','👤')"><span class="s">👤</span>I am</button>
+          <button class="wb wb-doing" onclick="addWord('he is','doing','👦')"><span class="s">👦</span>he is</button>
+          <button class="wb wb-doing" onclick="addWord('she is','doing','👧')"><span class="s">👧</span>she is</button>
+          <button class="wb wb-doing" onclick="addWord('it is','doing','🔵')"><span class="s">🔵</span>it is</button>
+          <button class="wb wb-doing" onclick="addWord('we are','doing','👥')"><span class="s">👥</span>we are</button>
+          <button class="wb wb-doing" onclick="addWord('they are','doing','👫')"><span class="s">👫</span>they are</button>
+          <button class="wb wb-doing" onclick="addWord('you are','doing','🫵')"><span class="s">🫵</span>you are</button>
+        </div>
+      </div>
+      <div class="words" id="words-doing-main">
+        <button class="wb wb-doing" onclick="addWord('eating','doing','🍽️')"><span class="s">🍽️</span>eating</button>
+        <button class="wb wb-doing" onclick="addWord('playing','doing','🎮')"><span class="s">🎮</span>playing</button>
+        <button class="wb wb-doing" onclick="addWord('running','doing','🏃')"><span class="s">🏃</span>running</button>
+        <button class="wb wb-doing" onclick="addWord('sleeping','doing','😴')"><span class="s">😴</span>sleeping</button>
+        <button class="wb wb-doing" onclick="addWord('jumping','doing','🦘')"><span class="s">🦘</span>jumping</button>
+        <button class="wb wb-doing" onclick="addWord('swimming','doing','🏊')"><span class="s">🏊</span>swimming</button>
+        <button class="wb wb-doing" onclick="addWord('drawing','doing','🎨')"><span class="s">🎨</span>drawing</button>
+        <button class="wb wb-doing" onclick="addWord('watching','doing','👀')"><span class="s">👀</span>watching</button>
+        <button class="wb wb-doing" onclick="addWord('reading','doing','📖')"><span class="s">📖</span>reading</button>
+        <button class="wb wb-doing" onclick="addWord('laughing','doing','😂')"><span class="s">😂</span>laughing</button>
+        <button class="wb wb-doing" onclick="addWord('crying','doing','😢')"><span class="s">😢</span>crying</button>
+        <button class="wb wb-doing" onclick="addWord('shouting','doing','📢')"><span class="s">📢</span>shouting</button>
+        <button class="wb wb-doing" onclick="addWord('helping','doing','🤝')"><span class="s">🤝</span>helping</button>
+        <button class="wb wb-doing" onclick="addWord('dancing','doing','💃')"><span class="s">💃</span>dancing</button>
+        <button class="wb wb-doing" onclick="addWord('thinking','doing','💭')"><span class="s">💭</span>thinking</button>
+        <button class="wb wb-doing" onclick="addWord('cooking','doing','🍳')"><span class="s">🍳</span>cooking</button>
+        <button class="wb wb-doing" onclick="addWord('singing','doing','🎤')"><span class="s">🎤</span>singing</button>
+        <button class="wb wb-doing" onclick="addWord('talking','doing','💬')"><span class="s">💬</span>talking</button>
+        <button class="wb wb-doing" onclick="addWord('listening','doing','👂')"><span class="s">👂</span>listening</button>
+        <button class="wb wb-doing" onclick="addWord('writing','doing','✏️')"><span class="s">✏️</span>writing</button>
+        <button class="wb wb-doing" onclick="addWord('building','doing','🔧')"><span class="s">🔧</span>building</button>
+        <button class="wb wb-doing" onclick="addWord('climbing','doing','🧗')"><span class="s">🧗</span>climbing</button>
+        <button class="wb wb-doing" onclick="addWord('hiding','doing','🙈')"><span class="s">🙈</span>hiding</button>
+        <button class="wb wb-doing" onclick="addWord('waiting','doing','⏳')"><span class="s">⏳</span>waiting</button>
+        <button class="wb wb-doing" onclick="addWord('went','doing','➡️')"><span class="s">➡️</span>went</button>
+        <button class="wb wb-doing" onclick="addWord('wants','doing','💭')"><span class="s">💭</span>wants</button>
+        <button class="wb wb-doing" onclick="addWord('loves','doing','❤️')"><span class="s">❤️</span>loves</button>
+        <button class="wb wb-doing" onclick="addWord('likes','doing','👍')"><span class="s">👍</span>likes</button>
+        <button class="wb wb-doing" onclick="addWord('does not like','doing','👎')"><span class="s">👎</span>does not like</button>
+        <button class="wb wb-doing" onclick="addWord('has','doing','✋')"><span class="s">✋</span>has</button>
+        <button class="wb wb-doing" onclick="addWord('needs','doing','❗')"><span class="s">❗</span>needs</button>
+        <button class="wb wb-doing" onclick="addWord('feels','doing','💛')"><span class="s">💛</span>feels</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHERE -->
+  <div class="section sec-where">
+    <div class="sec-hdr" onclick="toggleSec('where')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('where')">
+      <div class="sec-icon">📍</div>
+      <div><div class="sec-title">WHERE?</div><div class="sec-desc">Places · Positions · Locations</div></div>
+      <span class="toggle-arrow" id="arr-where">▾</span>
+    </div>
+    <div class="words" id="words-where">
+      <button class="wb wb-where" onclick="addWord('at school','where','🏫')"><span class="s">🏫</span>at school</button>
+      <button class="wb wb-where" onclick="addWord('at home','where','🏠')"><span class="s">🏠</span>at home</button>
+      <button class="wb wb-where" onclick="addWord('in the park','where','🌳')"><span class="s">🌳</span>in the park</button>
+      <button class="wb wb-where" onclick="addWord('in the garden','where','🌻')"><span class="s">🌻</span>in the garden</button>
+      <button class="wb wb-where" onclick="addWord('at the beach','where','🏖️')"><span class="s">🏖️</span>at the beach</button>
+      <button class="wb wb-where" onclick="addWord('in the classroom','where','🏛️')"><span class="s">🏛️</span>in the classroom</button>
+      <button class="wb wb-where" onclick="addWord('on the bus','where','🚌')"><span class="s">🚌</span>on the bus</button>
+      <button class="wb wb-where" onclick="addWord('in the kitchen','where','🍳')"><span class="s">🍳</span>in the kitchen</button>
+      <button class="wb wb-where" onclick="addWord('outside','where','🌤️')"><span class="s">🌤️</span>outside</button>
+      <button class="wb wb-where" onclick="addWord('inside','where','🏠')"><span class="s">🏠</span>inside</button>
+      <button class="wb wb-where" onclick="addWord('on top','where','⬆️')"><span class="s">⬆️</span>on top</button>
+      <button class="wb wb-where" onclick="addWord('underneath','where','⬇️')"><span class="s">⬇️</span>underneath</button>
+      <button class="wb wb-where" onclick="addWord('next to','where','↔️')"><span class="s">↔️</span>next to</button>
+      <button class="wb wb-where" onclick="addWord('at the shops','where','🛒')"><span class="s">🛒</span>at the shops</button>
+      <button class="wb wb-where" onclick="addWord('in the bedroom','where','🛏️')"><span class="s">🛏️</span>in the bedroom</button>
+      <button class="wb wb-where" onclick="addWord('in the bathroom','where','🚿')"><span class="s">🚿</span>in the bathroom</button>
+      <button class="wb wb-where" onclick="addWord('at the table','where','🪑')"><span class="s">🪑</span>at the table</button>
+      <button class="wb wb-where" onclick="addWord('in the car','where','🚗')"><span class="s">🚗</span>in the car</button>
+      <button class="wb wb-where" onclick="addWord('at the pool','where','🏊')"><span class="s">🏊</span>at the pool</button>
+      <button class="wb wb-where" onclick="addWord('in the forest','where','🌲')"><span class="s">🌲</span>in the forest</button>
+      <button class="wb wb-where" onclick="addWord('at the zoo','where','🦁')"><span class="s">🦁</span>at the zoo</button>
+      <button class="wb wb-where" onclick="addWord('in front of','where','👁️')"><span class="s">👁️</span>in front of</button>
+      <button class="wb wb-where" onclick="addWord('behind','where','👀')"><span class="s">👀</span>behind</button>
+      <button class="wb wb-where" onclick="addWord('at the hospital','where','🏥')"><span class="s">🏥</span>at the hospital</button>
+      <button class="wb wb-where" onclick="addWord('at the farm','where','🐄')"><span class="s">🐄</span>at the farm</button>
+    </div>
+  </div>
+
+  <!-- WHAT (noun) -->
+  <div class="section sec-what">
+    <div class="sec-hdr" onclick="toggleSec('what')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('what')">
+      <div class="sec-icon">📦</div>
+      <div><div class="sec-title">WHAT?</div><div class="sec-desc">Nouns · Objects · Things</div></div>
+      <span class="toggle-arrow" id="arr-what">▾</span>
+    </div>
+    <div class="words" id="words-what">
+      <button class="wb wb-what" onclick="addWord('food','what','🍕')"><span class="s">🍕</span>food</button>
+      <button class="wb wb-what" onclick="addWord('a book','what','📚')"><span class="s">📚</span>a book</button>
+      <button class="wb wb-what" onclick="addWord('a ball','what','⚽')"><span class="s">⚽</span>a ball</button>
+      <button class="wb wb-what" onclick="addWord('the TV','what','📺')"><span class="s">📺</span>the TV</button>
+      <button class="wb wb-what" onclick="addWord('a toy','what','🧸')"><span class="s">🧸</span>a toy</button>
+      <button class="wb wb-what" onclick="addWord('water','what','💧')"><span class="s">💧</span>water</button>
+      <button class="wb wb-what" onclick="addWord('a game','what','🎮')"><span class="s">🎮</span>a game</button>
+      <button class="wb wb-what" onclick="addWord('music','what','🎵')"><span class="s">🎵</span>music</button>
+      <button class="wb wb-what" onclick="addWord('my bag','what','🎒')"><span class="s">🎒</span>my bag</button>
+      <button class="wb wb-what" onclick="addWord('a picture','what','🖼️')"><span class="s">🖼️</span>a picture</button>
+      <button class="wb wb-what" onclick="addWord('animals','what','🦁')"><span class="s">🦁</span>animals</button>
+      <button class="wb wb-what" onclick="addWord('a sandwich','what','🥪')"><span class="s">🥪</span>a sandwich</button>
+      <button class="wb wb-what" onclick="addWord('a drink','what','🥤')"><span class="s">🥤</span>a drink</button>
+      <button class="wb wb-what" onclick="addWord('a phone','what','📱')"><span class="s">📱</span>a phone</button>
+      <button class="wb wb-what" onclick="addWord('a bike','what','🚲')"><span class="s">🚲</span>a bike</button>
+      <button class="wb wb-what" onclick="addWord('clothes','what','👕')"><span class="s">👕</span>clothes</button>
+      <button class="wb wb-what" onclick="addWord('a pencil','what','✏️')"><span class="s">✏️</span>a pencil</button>
+      <button class="wb wb-what" onclick="addWord('the computer','what','💻')"><span class="s">💻</span>the computer</button>
+      <button class="wb wb-what" onclick="addWord('a cookie','what','🍪')"><span class="s">🍪</span>a cookie</button>
+      <button class="wb wb-what" onclick="addWord('a chair','what','🪑')"><span class="s">🪑</span>a chair</button>
+      <button class="wb wb-what" onclick="addWord('a door','what','🚪')"><span class="s">🚪</span>a door</button>
+      <button class="wb wb-what" onclick="addWord('the sun','what','☀️')"><span class="s">☀️</span>the sun</button>
+      <button class="wb wb-what" onclick="addWord('something fun','what','🎉')"><span class="s">🎉</span>something fun</button>
+      <button class="wb wb-what" onclick="addWord('a present','what','🎁')"><span class="s">🎁</span>a present</button>
+      <button class="wb wb-what" onclick="addWord('the bus','what','🚌')"><span class="s">🚌</span>the bus</button>
+    </div>
+  </div>
+
+  <!-- WHAT LIKE -->
+  <div class="section sec-whatlike">
+    <div class="sec-hdr" onclick="toggleSec('whatlike')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('whatlike')">
+      <div class="sec-icon">🌈</div>
+      <div><div class="sec-title">WHAT LIKE?</div><div class="sec-desc">Adjectives · Feelings · Colours · Sizes</div></div>
+      <span class="toggle-arrow" id="arr-whatlike">▾</span>
+    </div>
+    <div class="words" id="words-whatlike">
+      <button class="wb wb-whatlike" onclick="addWord('happy','whatlike','😊')"><span class="s">😊</span>happy</button>
+      <button class="wb wb-whatlike" onclick="addWord('sad','whatlike','😢')"><span class="s">😢</span>sad</button>
+      <button class="wb wb-whatlike" onclick="addWord('angry','whatlike','😠')"><span class="s">😠</span>angry</button>
+      <button class="wb wb-whatlike" onclick="addWord('excited','whatlike','🤩')"><span class="s">🤩</span>excited</button>
+      <button class="wb wb-whatlike" onclick="addWord('scared','whatlike','😨')"><span class="s">😨</span>scared</button>
+      <button class="wb wb-whatlike" onclick="addWord('tired','whatlike','😴')"><span class="s">😴</span>tired</button>
+      <button class="wb wb-whatlike" onclick="addWord('hungry','whatlike','🤤')"><span class="s">🤤</span>hungry</button>
+      <button class="wb wb-whatlike" onclick="addWord('big','whatlike','🐘')"><span class="s">🐘</span>big</button>
+      <button class="wb wb-whatlike" onclick="addWord('small','whatlike','🐭')"><span class="s">🐭</span>small</button>
+      <button class="wb wb-whatlike" onclick="addWord('fast','whatlike','⚡')"><span class="s">⚡</span>fast</button>
+      <button class="wb wb-whatlike" onclick="addWord('slow','whatlike','🐢')"><span class="s">🐢</span>slow</button>
+      <button class="wb wb-whatlike" onclick="addWord('loud','whatlike','📢')"><span class="s">📢</span>loud</button>
+      <button class="wb wb-whatlike" onclick="addWord('quiet','whatlike','🤫')"><span class="s">🤫</span>quiet</button>
+      <button class="wb wb-whatlike" onclick="addWord('funny','whatlike','🤣')"><span class="s">🤣</span>funny</button>
+      <button class="wb wb-whatlike" onclick="addWord('yummy','whatlike','😋')"><span class="s">😋</span>yummy</button>
+      <button class="wb wb-whatlike" onclick="addWord('horrible','whatlike','🤢')"><span class="s">🤢</span>horrible</button>
+      <button class="wb wb-whatlike" onclick="addWord('beautiful','whatlike','✨')"><span class="s">✨</span>beautiful</button>
+      <button class="wb wb-whatlike" onclick="addWord('red','whatlike','🔴')"><span class="s">🔴</span>red</button>
+      <button class="wb wb-whatlike" onclick="addWord('blue','whatlike','🔵')"><span class="s">🔵</span>blue</button>
+      <button class="wb wb-whatlike" onclick="addWord('yellow','whatlike','🟡')"><span class="s">🟡</span>yellow</button>
+      <button class="wb wb-whatlike" onclick="addWord('green','whatlike','🟢')"><span class="s">🟢</span>green</button>
+      <button class="wb wb-whatlike" onclick="addWord('purple','whatlike','🟣')"><span class="s">🟣</span>purple</button>
+      <button class="wb wb-whatlike" onclick="addWord('orange','whatlike','🟠')"><span class="s">🟠</span>orange</button>
+      <button class="wb wb-whatlike" onclick="addWord('hot','whatlike','🔥')"><span class="s">🔥</span>hot</button>
+      <button class="wb wb-whatlike" onclick="addWord('cold','whatlike','🧊')"><span class="s">🧊</span>cold</button>
+      <button class="wb wb-whatlike" onclick="addWord('wet','whatlike','💦')"><span class="s">💦</span>wet</button>
+      <button class="wb wb-whatlike" onclick="addWord('dirty','whatlike','🤎')"><span class="s">🤎</span>dirty</button>
+      <button class="wb wb-whatlike" onclick="addWord('clean','whatlike','🧼')"><span class="s">🧼</span>clean</button>
+      <button class="wb wb-whatlike" onclick="addWord('soft','whatlike','🧸')"><span class="s">🧸</span>soft</button>
+      <button class="wb wb-whatlike" onclick="addWord('hard','whatlike','🪨')"><span class="s">🪨</span>hard</button>
+      <button class="wb wb-whatlike" onclick="addWord('bored','whatlike','😑')"><span class="s">😑</span>bored</button>
+      <button class="wb wb-whatlike" onclick="addWord('worried','whatlike','😟')"><span class="s">😟</span>worried</button>
+      <button class="wb wb-whatlike" onclick="addWord('surprised','whatlike','😲')"><span class="s">😲</span>surprised</button>
+      <button class="wb wb-whatlike" onclick="addWord('calm','whatlike','😌')"><span class="s">😌</span>calm</button>
+    </div>
+  </div>
+
+  <!-- HOW -->
+  <div class="section sec-how">
+    <div class="sec-hdr" onclick="toggleSec('how')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('how')">
+      <div class="sec-icon">❓</div>
+      <div><div class="sec-title">HOW?</div><div class="sec-desc">Manner · Way of doing</div></div>
+      <span class="toggle-arrow" id="arr-how">▾</span>
+    </div>
+    <div class="words" id="words-how">
+      <button class="wb wb-how" onclick="addWord('by car','how','🚗')"><span class="s">🚗</span>by car</button>
+      <button class="wb wb-how" onclick="addWord('by bus','how','🚌')"><span class="s">🚌</span>by bus</button>
+      <button class="wb wb-how" onclick="addWord('on foot','how','🚶')"><span class="s">🚶</span>on foot</button>
+      <button class="wb wb-how" onclick="addWord('very quickly','how','⚡')"><span class="s">⚡</span>very quickly</button>
+      <button class="wb wb-how" onclick="addWord('slowly','how','🐢')"><span class="s">🐢</span>slowly</button>
+      <button class="wb wb-how" onclick="addWord('loudly','how','📢')"><span class="s">📢</span>loudly</button>
+      <button class="wb wb-how" onclick="addWord('quietly','how','🤫')"><span class="s">🤫</span>quietly</button>
+      <button class="wb wb-how" onclick="addWord('carefully','how','🧐')"><span class="s">🧐</span>carefully</button>
+      <button class="wb wb-how" onclick="addWord('together','how','🤝')"><span class="s">🤝</span>together</button>
+      <button class="wb wb-how" onclick="addWord('on my own','how','🧍')"><span class="s">🧍</span>on my own</button>
+      <button class="wb wb-how" onclick="addWord('really well','how','⭐')"><span class="s">⭐</span>really well</button>
+      <button class="wb wb-how" onclick="addWord('a little bit','how','🤏')"><span class="s">🤏</span>a little bit</button>
+      <button class="wb wb-how" onclick="addWord('a lot','how','💯')"><span class="s">💯</span>a lot</button>
+      <button class="wb wb-how" onclick="addWord('by bike','how','🚲')"><span class="s">🚲</span>by bike</button>
+      <button class="wb wb-how" onclick="addWord('by train','how','🚂')"><span class="s">🚂</span>by train</button>
+      <button class="wb wb-how" onclick="addWord('happily','how','😊')"><span class="s">😊</span>happily</button>
+      <button class="wb wb-how" onclick="addWord('sadly','how','😢')"><span class="s">😢</span>sadly</button>
+      <button class="wb wb-how" onclick="addWord('every day','how','📅')"><span class="s">📅</span>every day</button>
+      <button class="wb wb-how" onclick="addWord('sometimes','how','🔄')"><span class="s">🔄</span>sometimes</button>
+      <button class="wb wb-how" onclick="addWord('never','how','🚫')"><span class="s">🚫</span>never</button>
+      <button class="wb wb-how" onclick="addWord('always','how','♾️')"><span class="s">♾️</span>always</button>
+    </div>
+  </div>
+
+  <!-- WHO TO -->
+  <div class="section sec-whoto">
+    <div class="sec-hdr" onclick="toggleSec('whoto')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('whoto')">
+      <div class="sec-icon">🎁</div>
+      <div><div class="sec-title">WHO TO?</div><div class="sec-desc">Recipients · Who receives the action</div></div>
+      <span class="toggle-arrow" id="arr-whoto">▾</span>
+    </div>
+    <div class="words" id="words-whoto">
+      <button class="wb wb-whoto" onclick="addWord('to me','whoto','🫵')"><span class="s">🫵</span>to me</button>
+      <button class="wb wb-whoto" onclick="addWord('to my friend','whoto','👫')"><span class="s">👫</span>to my friend</button>
+      <button class="wb wb-whoto" onclick="addWord('to Mum','whoto','👩')"><span class="s">👩</span>to Mum</button>
+      <button class="wb wb-whoto" onclick="addWord('to Dad','whoto','👨')"><span class="s">👨</span>to Dad</button>
+      <button class="wb wb-whoto" onclick="addWord('to my teacher','whoto','🧑‍🏫')"><span class="s">🧑‍🏫</span>to my teacher</button>
+      <button class="wb wb-whoto" onclick="addWord('to everyone','whoto','🌍')"><span class="s">🌍</span>to everyone</button>
+      <button class="wb wb-whoto" onclick="addWord('to the dog','whoto','🐕')"><span class="s">🐕</span>to the dog</button>
+      <button class="wb wb-whoto" onclick="addWord('to him','whoto','👦')"><span class="s">👦</span>to him</button>
+      <button class="wb wb-whoto" onclick="addWord('to her','whoto','👧')"><span class="s">👧</span>to her</button>
+      <button class="wb wb-whoto" onclick="addWord('to them','whoto','👫')"><span class="s">👫</span>to them</button>
+      <button class="wb wb-whoto" onclick="addWord('to my brother','whoto','👦')"><span class="s">👦</span>to my brother</button>
+      <button class="wb wb-whoto" onclick="addWord('to my sister','whoto','👧')"><span class="s">👧</span>to my sister</button>
+      <button class="wb wb-whoto" onclick="addWord('to my grandma','whoto','👵')"><span class="s">👵</span>to my grandma</button>
+      <button class="wb wb-whoto" onclick="addWord('with my friend','whoto','🤝')"><span class="s">🤝</span>with my friend</button>
+      <button class="wb wb-whoto" onclick="addWord('with me','whoto','🫵')"><span class="s">🫵</span>with me</button>
+      <button class="wb wb-whoto" onclick="addWord('for me','whoto','🫵')"><span class="s">🫵</span>for me</button>
+      <button class="wb wb-whoto" onclick="addWord('for Mum','whoto','👩')"><span class="s">👩</span>for Mum</button>
+      <button class="wb wb-whoto" onclick="addWord('to the baby','whoto','👶')"><span class="s">👶</span>to the baby</button>
+    </div>
+  </div>
+
+  <!-- WHEN -->
+  <div class="section sec-when">
+    <div class="sec-hdr" onclick="toggleSec('when')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('when')">
+      <div class="sec-icon">🕐</div>
+      <div><div class="sec-title">WHEN?</div><div class="sec-desc">Time · Day · Season</div></div>
+      <span class="toggle-arrow" id="arr-when">▾</span>
+    </div>
+    <div class="words" id="words-when">
+      <button class="wb wb-when" onclick="addWord('today','when','📅')"><span class="s">📅</span>today</button>
+      <button class="wb wb-when" onclick="addWord('yesterday','when','⬅️')"><span class="s">⬅️</span>yesterday</button>
+      <button class="wb wb-when" onclick="addWord('tomorrow','when','➡️')"><span class="s">➡️</span>tomorrow</button>
+      <button class="wb wb-when" onclick="addWord('in the morning','when','🌅')"><span class="s">🌅</span>in the morning</button>
+      <button class="wb wb-when" onclick="addWord('at lunch','when','🌞')"><span class="s">🌞</span>at lunch</button>
+      <button class="wb wb-when" onclick="addWord('in the afternoon','when','☀️')"><span class="s">☀️</span>in the afternoon</button>
+      <button class="wb wb-when" onclick="addWord('at night','when','🌙')"><span class="s">🌙</span>at night</button>
+      <button class="wb wb-when" onclick="addWord('at the weekend','when','🎉')"><span class="s">🎉</span>at the weekend</button>
+      <button class="wb wb-when" onclick="addWord('on Monday','when','📆')"><span class="s">📆</span>on Monday</button>
+      <button class="wb wb-when" onclick="addWord('on Friday','when','📆')"><span class="s">📆</span>on Friday</button>
+      <button class="wb wb-when" onclick="addWord('in summer','when','☀️')"><span class="s">☀️</span>in summer</button>
+      <button class="wb wb-when" onclick="addWord('in winter','when','❄️')"><span class="s">❄️</span>in winter</button>
+      <button class="wb wb-when" onclick="addWord('a long time ago','when','⏳')"><span class="s">⏳</span>a long time ago</button>
+      <button class="wb wb-when" onclick="addWord('right now','when','⚡')"><span class="s">⚡</span>right now</button>
+      <button class="wb wb-when" onclick="addWord('later','when','⏰')"><span class="s">⏰</span>later</button>
+      <button class="wb wb-when" onclick="addWord('soon','when','⏩')"><span class="s">⏩</span>soon</button>
+      <button class="wb wb-when" onclick="addWord('every day','when','🔄')"><span class="s">🔄</span>every day</button>
+      <button class="wb wb-when" onclick="addWord('last week','when','📅')"><span class="s">📅</span>last week</button>
+      <button class="wb wb-when" onclick="addWord('next week','when','📅')"><span class="s">📅</span>next week</button>
+      <button class="wb wb-when" onclick="addWord('at Christmas','when','🎄')"><span class="s">🎄</span>at Christmas</button>
+      <button class="wb wb-when" onclick="addWord('on my birthday','when','🎂')"><span class="s">🎂</span>on my birthday</button>
+      <button class="wb wb-when" onclick="addWord('after school','when','🏫')"><span class="s">🏫</span>after school</button>
+      <button class="wb wb-when" onclick="addWord('before bed','when','🛏️')"><span class="s">🛏️</span>before bed</button>
+    </div>
+  </div>
+
+  <!-- CONNECTORS -->
+  <div class="section sec-conn" style="border-radius:var(--r);padding:0.9rem 1rem;">
+    <div class="sec-hdr" onclick="toggleSec('conn')" role="button" tabindex="0" aria-expanded="true" onkeydown="if(event.key==='Enter')toggleSec('conn')">
+      <div class="sec-icon" style="background:#555;border-radius:12px;font-size:1.4rem;">🔗</div>
+      <div><div class="sec-title" style="color:#333;">Connectors &amp; Punctuation</div><div class="sec-desc" style="color:#666;">and · but · because · ? · !</div></div>
+      <span class="toggle-arrow" id="arr-conn">▾</span>
+    </div>
+    <div class="words" id="words-conn">
+      <button class="wb wb-punct" onclick="addWord('and','punct','➕')"><span class="s">➕</span>and</button>
+      <button class="wb wb-punct" onclick="addWord('but','punct','⚡')"><span class="s">⚡</span>but</button>
+      <button class="wb wb-punct" onclick="addWord('because','punct','💡')"><span class="s">💡</span>because</button>
+      <button class="wb wb-punct" onclick="addWord('so','punct','➜')"><span class="s">➜</span>so</button>
+      <button class="wb wb-punct" onclick="addWord('then','punct','👉')"><span class="s">👉</span>then</button>
+      <button class="wb wb-punct" onclick="addWord('also','punct','✚')"><span class="s">✚</span>also</button>
+      <button class="wb wb-punct" onclick="addWord('if','punct','🤔')"><span class="s">🤔</span>if</button>
+      <button class="wb wb-punct" onclick="addWord('when','punct','⏰')"><span class="s">⏰</span>when</button>
+      <button class="wb wb-punct" onclick="addWord('the','punct','📌')"><span class="s">📌</span>the</button>
+      <button class="wb wb-punct" onclick="addWord('a','punct','🔤')"><span class="s">🔤</span>a</button>
+      <button class="wb wb-punct" onclick="addWord('not','punct','🚫')"><span class="s">🚫</span>not</button>
+      <button class="wb wb-punct" onclick="addWord('very','punct','💯')"><span class="s">💯</span>very</button>
+      <button class="wb wb-punct" onclick="addWord('!','punct','❗')"><span class="s">❗</span>!</button>
+      <button class="wb wb-punct" onclick="addWord('?','punct','❓')"><span class="s">❓</span>?</button>
+      <button class="wb wb-punct" onclick="addWord('...','punct','💬')"><span class="s">💬</span>...</button>
+    </div>
+  </div>
+
+  </div><!-- end wordbank -->
+</div><!-- end canvas -->
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div style="margin-bottom:0.8rem;">
+    <div class="sb-h">🎨 Colour key</div>
+    <div class="key-grid">
+      <div class="key-item"><div class="key-dot" style="background:var(--who)"></div>Who?</div>
+      <div class="key-item"><div class="key-dot" style="background:var(--doing)"></div>What doing?</div>
+      <div class="key-item"><div class="key-dot" style="background:var(--where)"></div>Where?</div>
+      <div class="key-item"><div class="key-dot" style="background:var(--what)"></div>What?</div>
+      <div class="key-item"><div class="key-dot" style="background:var(--whatlike)"></div>What like?</div>
+      <div class="key-item"><div class="key-dot" style="background:var(--how)"></div>How?</div>
+      <div class="key-item"><div class="key-dot" style="background:var(--whoto)"></div>Who to?</div>
+      <div class="key-item"><div class="key-dot" style="background:var(--when)"></div>When?</div>
+    </div>
+  </div>
+
+  <hr class="sb-sep">
+
+  <div style="margin-bottom:0.8rem;">
+    <div class="sb-h">💾 Save &amp; Export</div>
+    <div class="exp-row">
+      <button class="ebtn e-save" onclick="saveSentence()">💾 Save sentence</button>
+      <button class="ebtn e-txt"  onclick="exportText()">📄 Export as text</button>
+      <button class="ebtn e-pdf"  onclick="exportPDF()">📋 Export as HTML/PDF</button>
+      <button class="ebtn e-clr"  onclick="clearSentence()">🗑️ Clear sentence</button>
+    </div>
+  </div>
+
+  <hr class="sb-sep">
+
+  <div style="margin-bottom:0.8rem;">
+    <div class="sb-h">📌 Saved sentences</div>
+    <div id="savedList"><div style="color:#ccc;font-size:0.82rem;font-weight:700;text-align:center;padding:0.8rem 0;">No saved sentences yet</div></div>
+  </div>
+
+  <div class="tip">📸 Take a screenshot to save your colourful sentence and share it!</div>
+</div>
+</div>
+
+<div class="conf-wrap" id="confWrap" aria-hidden="true"></div>
+
+<!-- HELP MODAL -->
+<div class="modal-bg" id="helpModal" role="dialog" aria-modal="true" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal">
+    <div style="font-family:'Fredoka One',cursive;font-size:1.7rem;color:#E85D04;margin-bottom:0.9rem;">🔥 How to use Phoenix</div>
+    <div style="display:flex;flex-direction:column;gap:9px;font-weight:700;font-size:0.92rem;line-height:1.5;">
+      <div style="background:var(--who-l);border-radius:10px;padding:8px 12px;">🟠 <b>Orange = WHO?</b> — who is in the sentence?</div>
+      <div style="background:var(--doing-l);border-radius:10px;padding:8px 12px;">🟡 <b>Yellow = WHAT DOING?</b> — what are they doing? Use "I am", "he is" etc. for correct grammar!</div>
+      <div style="background:var(--where-l);border-radius:10px;padding:8px 12px;">🔵 <b>Blue = WHERE?</b> — where does it happen?</div>
+      <div style="background:var(--what-l);border-radius:10px;padding:8px 12px;">🟢 <b>Green = WHAT?</b> — what object or thing?</div>
+      <div style="background:var(--whatlike-l);border-radius:10px;padding:8px 12px;">🔴 <b>Red = WHAT LIKE?</b> — describing words &amp; feelings</div>
+      <div style="background:var(--how-l);border-radius:10px;padding:8px 12px;">🟣 <b>Purple = HOW?</b> — in what way?</div>
+      <div style="background:var(--whoto-l);border-radius:10px;padding:8px 12px;">🩷 <b>Pink = WHO TO?</b> — who receives?</div>
+      <div style="background:var(--when-l);border-radius:10px;padding:8px 12px;">🩵 <b>Teal = WHEN?</b> — what time?</div>
+    </div>
+    <div style="margin-top:1rem;font-size:0.9rem;color:#555;font-weight:700;line-height:1.7;">
+      👆 Tap any coloured word to add it to your sentence<br>
+      ✏️ Type your own word in the text box above the colour bar<br>
+      🔊 Press "Read it!" to hear your sentence<br>
+      💾 Save sentences to look at later<br>
+      📸 Screenshot to share your work!
+    </div>
+    <button onclick="document.getElementById('helpModal').classList.remove('open')" style="margin-top:1rem;background:#E85D04;color:white;border:none;border-radius:50px;padding:12px 28px;font-family:'Nunito',sans-serif;font-weight:800;font-size:1rem;cursor:pointer;width:100%;">Got it! 🔥</button>
+  </div>
+</div>
+
+<script>
+const PROMPTS={
+  free:'Pick words below — or type your own — to build your sentence!',
+  describe:'Look at a picture. Use WHO? + WHAT DOING? + WHERE? to describe what you see.',
+  myday:'Tell me about your day! Use WHEN? + WHO? + WHAT DOING? + WHERE?',
+  feelings:'How are you feeling? Use WHO? + WHAT DOING? + WHAT LIKE? to share your feelings.',
+  story:'Create a story! Build sentences for the beginning, middle and end.',
+  news:'Tell everyone your news! Use WHO? + WHAT DOING? + WHERE? + WHEN?',
+  question:'Ask a question! Build your sentence then add a ? at the end.'
+};
+
+let sentence=[];
+let muted=false;
+let saved=JSON.parse(localStorage.getItem('ph_saved')||'[]');
+
+function setAct(btn,type){
+  document.querySelectorAll('.abt').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('promptText').textContent=PROMPTS[type];
+}
+
+function addWord(word,cat,sym){
+  sentence.push({word,cat,sym});
+  render();
+  if(!muted) speakWord(word);
+  checkGrammar();
+}
+
+function addTyped(){
+  const inp=document.getElementById('typeInput');
+  const cat=document.getElementById('typeCat').value;
+  const word=inp.value.trim();
+  if(!word)return inp.focus();
+  addWord(word,cat,'✏️');
+  inp.value='';
+  inp.focus();
+  celebrate(3);
+}
+
+function render(){
+  const box=document.getElementById('sentChips');
+  const hint=document.getElementById('hint');
+  box.innerHTML='';
+  if(sentence.length===0){
+    const h=document.createElement('span');
+    h.className='hint';h.id='hint';
+    h.textContent='Tap words below to build your sentence ↓';
+    box.appendChild(h);
+    document.getElementById('sentText').textContent='Your sentence will appear here...';
+    return;
+  }
+  sentence.forEach((item,i)=>{
+    const c=document.createElement('button');
+    c.className=`chip c-${item.cat}`;
+    c.setAttribute('aria-label',`Remove: ${item.word}`);
+    c.innerHTML=`${item.sym} ${item.word} <span class="rm" aria-hidden="true">✕</span>`;
+    c.onclick=()=>{sentence.splice(i,1);render();checkGrammar();};
+    box.appendChild(c);
+  });
+  document.getElementById('sentText').textContent=sentence.map(s=>s.word).join(' ');
+  if(sentence.length>=3&&sentence.length%3===0) celebrate();
+}
+
+/* Grammar checker */
+function checkGrammar(){
+  const tip=document.getElementById('grammarTip');
+  const msg=document.getElementById('grammarMsg');
+  if(sentence.length<2){tip.classList.remove('show');return;}
+  const words=sentence.map(s=>s.word.toLowerCase());
+  const full=words.join(' ');
+  let warn='';
+  if(/\bi (is|are)\b/.test(full)) warn='Did you mean "I am"? Try swapping — use the "I am" button!';
+  else if(/\bhe (am|are)\b/.test(full)) warn='Did you mean "he is"? Try the "he is" button!';
+  else if(/\bshe (am|are)\b/.test(full)) warn='Did you mean "she is"? Try the "she is" button!';
+  else if(/\bwe (is|am)\b/.test(full)) warn='Did you mean "we are"? Try the "we are" button!';
+  else if(/\bthey (is|am)\b/.test(full)) warn='Did you mean "they are"? Try the "they are" button!';
+  else if(/\byou (is|am)\b/.test(full)) warn='Did you mean "you are"? Try the "you are" button!';
+  if(warn){msg.textContent=warn;tip.classList.add('show');}
+  else tip.classList.remove('show');
+}
+
+function speakWord(text){
+  if(muted||!window.speechSynthesis)return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.88;u.pitch=1.05;
+  speechSynthesis.speak(u);
+}
+
+function speakSentence(){
+  const text=sentence.map(s=>s.word).join(' ');
+  if(!text||sentence.length===0)return;
+  if(muted){alert('Sound is muted — press Sound on to enable speech.');return;}
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.rate=0.82;u.pitch=1.0;
+  const btn=document.getElementById('speakBtn');
+  btn.classList.add('pulsing');
+  u.onend=()=>btn.classList.remove('pulsing');
+  speechSynthesis.speak(u);
+}
+
+function clearSentence(){
+  sentence=[];render();
+  document.getElementById('grammarTip').classList.remove('show');
+}
+
+function toggleMute(){
+  muted=!muted;
+  const b=document.getElementById('muteBtn');
+  b.textContent=muted?'🔇 Sound off':'🔊 Sound on';
+  b.setAttribute('aria-pressed',String(muted));
+  b.classList.toggle('on',muted);
+  if(muted&&window.speechSynthesis)speechSynthesis.cancel();
+}
+
+function toggleSec(id){
+  const el=document.getElementById('words-'+id);
+  if(!el)return;
+  const arr=document.getElementById('arr-'+id);
+  const hidden=el.style.display==='none';
+  el.style.display=hidden?'':'none';
+  if(arr){arr.classList.toggle('closed',!hidden);}
+}
+
+function saveSentence(){
+  if(!sentence.length)return;
+  const text=sentence.map(s=>s.word).join(' ');
+  saved.unshift({text,time:new Date().toLocaleTimeString()});
+  if(saved.length>12)saved.pop();
+  localStorage.setItem('ph_saved',JSON.stringify(saved));
+  renderSaved();celebrate(5);
+}
+
+function renderSaved(){
+  const el=document.getElementById('savedList');
+  if(!saved.length){el.innerHTML='<div style="color:#ccc;font-size:0.82rem;font-weight:700;text-align:center;padding:0.8rem 0;">No saved sentences yet</div>';return;}
+  el.innerHTML=saved.map((s,i)=>`
+    <div class="saved-item" onclick="loadSaved(${i})" role="button" tabindex="0" aria-label="Load: ${s.text}" onkeydown="if(event.key==='Enter')loadSaved(${i})">
+      <span style="font-size:0.72rem;opacity:0.5;flex-shrink:0">${s.time}</span>
+      <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.text}</span>
+      <button class="saved-del" onclick="event.stopPropagation();delSaved(${i})" aria-label="Delete">✕</button>
+    </div>`).join('');
+}
+
+function loadSaved(i){
+  sentence=saved[i].text.split(' ').map(w=>({word:w,cat:'custom',sym:'✏️'}));
+  render();
+}
+
+function delSaved(i){
+  saved.splice(i,1);
+  localStorage.setItem('ph_saved',JSON.stringify(saved));
+  renderSaved();
+}
+
+function exportText(){
+  if(!sentence.length)return alert('Build a sentence first!');
+  const text=sentence.map(s=>s.word).join(' ');
+  const blob=new Blob([`Phoenix Colourful Semantics\n============================\n\n${text}\n\nDate: ${new Date().toLocaleString()}`],{type:'text/plain'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my_sentence.txt';a.click();
+}
+
+function exportPDF(){
+  if(!sentence.length)return alert('Build a sentence first!');
+  const text=sentence.map(s=>s.word).join(' ');
+  const colors={who:'#E85D04',doing:'#CA8A04',where:'#2563EB',what:'#16A34A',whatlike:'#DC2626',how:'#7C3AED',whoto:'#EC4899',when:'#0891B2',punct:'#555',custom:'#8B5CF6'};
+  const chips=sentence.map(s=>`<span style="background:${colors[s.cat]||'#555'};color:white;padding:8px 16px;border-radius:50px;font-size:1.05rem;font-weight:800;display:inline-block;margin:4px;">${s.sym} ${s.word}</span>`).join(' ');
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>My Sentence</title><link href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800;900&family=Fredoka+One&display=swap" rel="stylesheet"><style>body{font-family:'Nunito',sans-serif;padding:2.5rem;background:#FFF9F0;}h1{font-family:'Fredoka One';color:#E85D04;font-size:2rem;}h2{font-family:'Fredoka One';color:#666;font-size:1.2rem;margin-top:1.5rem;}.s{background:white;border-radius:18px;padding:1.2rem 1.5rem;margin-top:0.8rem;font-size:1.5rem;font-weight:800;line-height:2;border:3px solid #F0E8D8;}.chips{margin-top:0.8rem;line-height:2.5;}.footer{color:#bbb;font-size:0.82rem;margin-top:2rem;}</style></head><body><h1>🔥 Phoenix Colourful Semantics</h1><h2>My sentence</h2><div class="s">${text}</div><h2>Colourful sentence</h2><div class="chips">${chips}</div><div class="footer">Created: ${new Date().toLocaleString()}</div></body></html>`;
+  const blob=new Blob([html],{type:'text/html'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='my_sentence.html';a.click();
+  setTimeout(()=>alert('💡 Open the file in your browser then File → Print → Save as PDF!'),200);
+}
+
+function celebrate(n=8){
+  const wrap=document.getElementById('confWrap');
+  const cols=['#E85D04','#EAB308','#2563EB','#16A34A','#DC2626','#7C3AED','#EC4899','#0891B2'];
+  for(let i=0;i<n;i++){
+    setTimeout(()=>{
+      const c=document.createElement('div');c.className='conf';
+      c.style.cssText=`left:${Math.random()*100}%;top:-10px;background:${cols[~~(Math.random()*cols.length)]};width:${7+Math.random()*7}px;height:${7+Math.random()*7}px;animation-duration:${1.2+Math.random()*1.5}s;`;
+      wrap.appendChild(c);setTimeout(()=>c.remove(),2800);
+    },i*90);
+  }
+}
+
+function showHelp(){document.getElementById('helpModal').classList.add('open');}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape')document.getElementById('helpModal').classList.remove('open');
+});
+document.getElementById('typeInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter')addTyped();
+});
+
+renderSaved();
+</script>
+</body>
+</html>
